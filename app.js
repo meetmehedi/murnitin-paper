@@ -1,5 +1,15 @@
 /* ── Murnitin App.js ── */
 
+const isBrowserRuntime = typeof window !== 'undefined' && typeof document !== 'undefined';
+if (!isBrowserRuntime) {
+  if (typeof console !== 'undefined') {
+    console.log('Murnitin app loaded in a non-browser environment; skipping DOM initialization.');
+  }
+  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    process.exit(0);
+  }
+}
+
 // ═══════════════════════════════════════════════
 // CUSTOM CURSOR
 // ═══════════════════════════════════════════════

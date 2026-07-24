@@ -7,7 +7,7 @@ import sys
 import os
 
 # Port configuration
-PORT = 8000
+PORT = int(os.environ.get("PORT", "8000"))
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LAZY-LOAD HUGGING FACE ENSEMBLE MODELS
@@ -260,13 +260,27 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
-    
+
     handler = MurnitinHandler
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", PORT), handler) as httpd:
-        print(f"Murnitin Server running at http://localhost:{PORT}/")
+
+    httpd = None
+    for candidate_port in range(PORT, PORT + 10):
         try:
-            httpd.serve_forever()
+            httpd = socketserver.TCPServer(("", candidate_port), handler)
+            break
+        except OSError as e:
+            if getattr(e, 'errno', None) not in {48, 98, 10048}:
+                raise
+            print(f"Port {candidate_port} is busy, trying {candidate_port + 1}...")
+
+    if httpd is None:
+        raise RuntimeError(f"Unable to start server on ports {PORT}-{PORT + 9}")
+
+    with httpd as server:
+        print(f"Murnitin Server running at http://localhost:{httpd.server_address[1]}/")
+        try:
+            server.serve_forever()
         except KeyboardInterrupt:
             print("\nShutting down server.")
             sys.exit(0)
