@@ -2,304 +2,522 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Murnitin — AI & Plagiarism Inspector</title>
-  <meta name="description" content="Murnitin is a next-generation academic integrity platform offering explainable AI detection, PDF analysis, and detailed reports. Built by Md. Mehedi Hasan." />
-  <meta name="theme-color" content="#000000" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Murnitin — Academic AI &amp; Integrity Studio</title>
+  <meta name="description" content="Murnitin is a next-generation academic integrity platform offering explainable AI writing detection, PDF parsing, adversarial evasion forensics, and verifiable integrity receipts. Built by Md. Mehedi Hasan." />
+  <meta name="theme-color" content="#0b1727" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="murnitin-theme">
 
   <!-- Progress bar -->
   <div id="progress-bar"></div>
 
-  <!-- Custom Cursor -->
-  <div id="cursor-dot"></div>
-  <div id="cursor-ring"></div>
-
-  <!-- Particle Canvas -->
+  <!-- Background Canvas -->
   <canvas id="particle-canvas"></canvas>
 
-  <!-- ── Floating Nav ── -->
-  <nav id="nav" class="no-print">
-    <div class="nav-pill">
-      <a href="#hero" class="active">Home</a>
-      <a href="#inspect">Inspect</a>
-      <a href="#how">How It Works</a>
-      <a href="#report">Report</a>
-      <a href="https://mdmehedihasan.us" target="_blank">Portfolio ↗</a>
-    </div>
-  </nav>
-
-  <!-- ── HERO ── -->
-  <section id="hero" class="no-print">
-    <div class="container hero-inner">
-      <div class="hero-badge">
-        <span class="dot"></span>
-        Next-Gen Academic Integrity · Built by Md. Mehedi Hasan
+  <!-- ═══════════════════════════════════════════════
+       MURNITIN STUDIO HEADER BAR
+       ═══════════════════════════════════════════════ -->
+  <header id="studio-header" class="studio-header no-print">
+    <div class="header-left">
+      <div class="brand-badge" onclick="switchView('inspector');">
+        <span class="brand-logo-icon">M</span>
+        <div class="brand-titles">
+          <span class="brand-name">MURNITIN</span>
+          <span class="brand-tag">INTEGRITY STUDIO</span>
+        </div>
       </div>
 
-      <h1 class="hero-name"><span>Murnitin</span></h1>
-
-      <p class="hero-sub">AI &amp; Plagiarism Inspector</p>
-      <p class="hero-tagline">
-        Upload any PDF — get an explainable, sentence-level integrity report with AI probability scoring, adversarial bypass detection, and detailed linguistic analysis. No black-box. No guesswork.
-      </p>
-
-      <div class="hero-buttons">
-        <a href="#inspect" class="btn-primary">↑ Upload &amp; Inspect</a>
-        <a href="#how" class="btn-secondary">How It Works</a>
-      </div>
-
-      <!-- Stats Bar -->
-      <div class="hero-stats">
-        <div class="hstat">
-          <span class="hstat-num">4</span>
-          <span class="hstat-lbl">Detection Modes</span>
-        </div>
-        <div class="hstat-div"></div>
-        <div class="hstat">
-          <span class="hstat-num accent">0</span>
-          <span class="hstat-lbl">Data Stored</span>
-        </div>
-        <div class="hstat-div"></div>
-        <div class="hstat">
-          <span class="hstat-num">XAI</span>
-          <span class="hstat-lbl">Explainable AI</span>
-        </div>
+      <div class="doc-meta-pill" id="header-meta-pill">
+        <span class="meta-item"><span class="meta-label">ID:</span> <strong id="hdr-doc-id">MN-NEW</strong></span>
+        <span class="meta-sep">|</span>
+        <span class="meta-item"><span class="meta-label">Words:</span> <strong id="hdr-doc-words">0</strong></span>
+        <span class="meta-sep">|</span>
+        <span class="meta-item badge-engine" id="engine-indicator">Statistical Engine</span>
       </div>
     </div>
-  </section>
 
-  <!-- ── HOW IT WORKS ── -->
-  <section id="how" class="no-print">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-eyebrow">Methodology</span>
-        <h2 class="section-title">How Murnitin Works</h2>
-        <p class="section-desc">
-          Unlike opaque systems, Murnitin surfaces exactly what it found, why it flagged it, and how confident it is.
-        </p>
-      </div>
+    <!-- Navigation view switcher -->
+    <nav class="header-nav">
+      <button class="nav-tab active" data-view="inspector" id="tab-nav-inspector">
+        <span class="nav-icon">✏️</span> <span class="nav-text">Document Input</span>
+      </button>
+      <button class="nav-tab" data-view="studio" id="tab-nav-studio">
+        <span class="nav-icon">📑</span> <span class="nav-text">Murnitin Studio</span>
+      </button>
+      <button class="nav-tab" data-view="methodology" id="tab-nav-methodology">
+        <span class="nav-icon">🔬</span> <span class="nav-text">How It Works</span>
+      </button>
+      <a href="https://mdmehedihasan.us" target="_blank" class="nav-tab author-link" title="Portfolio of Md. Mehedi Hasan">
+        <span class="nav-icon">👨‍💻</span> <span class="nav-text">Portfolio ↗</span>
+      </a>
+    </nav>
 
-      <div class="how-grid">
-        <div class="how-card">
-          <div class="how-icon">01</div>
-          <h3>PDF Extraction</h3>
-          <p>Your PDF is parsed client-side using PDF.js. No data ever leaves your browser.</p>
-        </div>
-        <div class="how-card">
-          <div class="how-icon">02</div>
-          <h3>Linguistic Analysis</h3>
-          <p>Sentence-level pseudo-perplexity and burstiness scores reveal uniform AI writing patterns vs. the natural variance of human prose.</p>
-        </div>
-        <div class="how-card">
-          <div class="how-icon">03</div>
-          <h3>Adversarial Scanning</h3>
-          <p>Every word is inspected for homoglyphs (mixed Cyrillic/Latin scripts) and invisible Unicode characters used to defeat standard detectors.</p>
-        </div>
-        <div class="how-card">
-          <div class="how-icon">04</div>
-          <h3>Full Integrity Report</h3>
-          <p>A structured PDF-style report is generated: overall scores, per-sentence classification, evasion forensics, and compliance flags.</p>
-        </div>
-      </div>
+    <!-- Header Action Toolbar -->
+    <div class="header-actions">
+      <button id="btn-hdr-receipt" class="btn-hdr-outline hidden" title="View Submission Digital Receipt">
+        <span>🧾</span> <span class="btn-txt">Digital Receipt</span>
+      </button>
+      <button id="btn-hdr-download" class="btn-hdr-primary hidden" title="Export PDF Integrity Report">
+        <span>📥</span> <span class="btn-txt">Download PDF</span>
+      </button>
+      <button id="btn-mobile-drawer-toggle" class="btn-drawer-toggle" aria-label="Toggle Match Overview">
+        <span id="mobile-score-badge" class="mini-score-badge">0%</span>
+        <span>Overview</span>
+      </button>
     </div>
-  </section>
+  </header>
 
-  <!-- ── INSPECTOR ── -->
-  <section id="inspect" class="no-print">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-eyebrow">Inspector</span>
-        <h2 class="section-title">Upload Your Document</h2>
-        <p class="section-desc">
-          Upload a PDF or paste text directly. Murnitin will generate a full integrity report.
-        </p>
+  <!-- ═══════════════════════════════════════════════
+       MAIN APPLICATION WORKSPACE
+       ═══════════════════════════════════════════════ -->
+  <main id="app-workspace" class="app-workspace">
+
+    <!-- ─────────────────────────────────────────────
+         SECTION 1: DOCUMENT INPUT & INSPECTOR
+         ───────────────────────────────────────────── -->
+    <section id="section-inspector" class="workspace-section active no-print">
+      <div class="container-fluid inspector-container">
+        
+        <!-- Hero / Banner -->
+        <div class="studio-hero-banner">
+          <div class="banner-content">
+            <div class="hero-chip">
+              <span class="pulse-dot"></span> Next-Gen Academic Integrity &middot; Developed by Md. Mehedi Hasan
+            </div>
+            <h1>Academic Integrity &amp; AI Writing Detection</h1>
+            <p>Upload your research paper, essay, or assignment. Murnitin performs deep sentence-level perplexity analysis, burstiness modeling, and adversarial evasion forensics.</p>
+          </div>
+          <div class="banner-quick-stats">
+            <div class="qstat-card">
+              <span class="qstat-val">100%</span>
+              <span class="qstat-lbl">Client-Side Safe</span>
+            </div>
+            <div class="qstat-card">
+              <span class="qstat-val">XAI</span>
+              <span class="qstat-lbl">Sentence Evidence</span>
+            </div>
+            <div class="qstat-card">
+              <span class="qstat-val">0</span>
+              <span class="qstat-lbl">Data Stored</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Layout Cards -->
+        <div class="inspector-card-grid">
+          
+          <!-- Left Main Input Panel -->
+          <div class="murnitin-card input-main-card">
+            <div class="card-header-bar">
+              <div class="tab-row" role="tablist">
+                <button class="tab-btn active" data-tab="text" id="btn-tab-text">✏️ Paste Plain Text</button>
+                <button class="tab-btn" data-tab="pdf" id="btn-tab-pdf">📄 PDF Upload</button>
+              </div>
+              
+              <!-- Sample Loaders -->
+              <div class="sample-preset-wrapper">
+                <span class="preset-label">Test Samples:</span>
+                <div class="sample-chips">
+                  <button class="chip-btn active" data-sample="human">👤 Human Essay</button>
+                  <button class="chip-btn" data-sample="ai">🤖 AI Generated</button>
+                  <button class="chip-btn" data-sample="evasion">⚠️ Bypass Attack</button>
+                  <button class="chip-btn" data-sample="hybrid">🔀 Hybrid Human+AI</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body-content">
+              
+              <!-- Tab 1: Text Input -->
+              <div id="tab-text" class="tab-body active">
+                <div class="editor-area-wrapper">
+                  <textarea id="text-input" class="murnitin-textarea" placeholder="Paste your essay, thesis, or assignment text here... (Minimum 20 words recommended for statistical confidence)"></textarea>
+                  <div class="editor-toolbar-footer">
+                    <div class="counts-group">
+                      <span id="word-count" class="count-pill">0 words</span>
+                      <span id="char-count" class="count-pill">0 chars</span>
+                    </div>
+                    <button id="btn-clear-text" class="btn-ghost-sm" type="button">Clear</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 2: PDF Upload -->
+              <div id="tab-pdf" class="tab-body">
+                <div id="drop-zone" class="drop-zone-academic">
+                  <div class="drop-illustration">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="12" y1="18" x2="12" y2="12"></line>
+                      <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                  </div>
+                  <h3 class="drop-title">Upload Assignment or Article PDF</h3>
+                  <p class="drop-sub">Drag &amp; drop file here, or <span class="browse-link">browse your device</span></p>
+                  <input type="file" id="pdf-input" accept=".pdf" hidden />
+                </div>
+
+                <div id="file-info" class="file-info-bar hidden">
+                  <div class="file-icon-badge">📄</div>
+                  <div class="file-meta-details">
+                    <span id="file-name" class="file-name-text">document.pdf</span>
+                    <span id="file-size" class="file-size-text">0 KB</span>
+                  </div>
+                  <button id="btn-clear-file" class="btn-icon-clear" title="Remove PDF file">✕</button>
+                </div>
+
+                <div id="pdf-extract-status" class="extract-status-banner hidden">
+                  <span class="spinner-inline"></span>
+                  <span id="extract-msg">Extracting text with PDF.js client-side...</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Inspect CTA Bar -->
+            <div class="card-action-footer">
+              <button id="btn-inspect" class="btn-murnitin-cta">
+                <span class="btn-icon">🔬</span>
+                <span class="btn-label">Run Murnitin AI Inspection</span>
+                <span class="btn-arrow">→</span>
+              </button>
+              <div class="security-guarantee">
+                <span>🔒 <strong>Zero-Storage Guarantee:</strong> No student data leaves this browser session.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Quick Guide / Inspector Info Card -->
+          <div class="murnitin-card input-guide-card">
+            <div class="card-sub-header">
+              <h3>Integrity Indicators</h3>
+              <span class="badge-sub">Murnitin Metrics</span>
+            </div>
+            <div class="guide-metrics-list">
+              <div class="guide-item">
+                <div class="g-icon red">80%+</div>
+                <div class="g-text">
+                  <strong>High AI Likelihood</strong>
+                  <p>Uniform token perplexity with typical LLM syntactical continuity.</p>
+                </div>
+              </div>
+              <div class="guide-item">
+                <div class="g-icon amber">25-79%</div>
+                <div class="g-text">
+                  <strong>AI-Polished / Hybrid</strong>
+                  <p>Paraphrased passages or mixed human-authored and generative drafts.</p>
+                </div>
+              </div>
+              <div class="guide-item">
+                <div class="g-icon green">&lt;25%</div>
+                <div class="g-text">
+                  <strong>Likely Human Author</strong>
+                  <p>Natural burstiness and organic distribution of vocabulary.</p>
+                </div>
+              </div>
+              <div class="guide-item">
+                <div class="g-icon purple">⚠️</div>
+                <div class="g-text">
+                  <strong>Adversarial Evasion</strong>
+                  <p>Homoglyph attacks, invisible zero-width spaces, and font obfuscation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────
+         SECTION 2: MURNITIN FEEDBACK STUDIO VIEW
+         (Document Canvas + Match Overview Drawer)
+         ───────────────────────────────────────────── -->
+    <section id="section-studio" class="workspace-section no-print">
+      
+      <!-- Studio Sub-Toolbar -->
+      <div class="studio-sub-toolbar">
+        <div class="toolbar-left">
+          <button id="btn-back-to-input" class="btn-tool" title="Back to Document Input">
+            <span>←</span> Back to Editor
+          </button>
+          <div class="doc-title-editor">
+            <span class="doc-badge-pill">PAPER</span>
+            <span id="studio-doc-title" class="studio-doc-title">Document Inspection</span>
+          </div>
+        </div>
+
+        <div class="toolbar-center">
+          <div class="highlight-filters-bar">
+            <span class="filter-label">Layers:</span>
+            <label class="layer-toggle-btn active" data-layer="ai">
+              <span class="dot dot-red"></span> AI-Direct
+            </label>
+            <label class="layer-toggle-btn active" data-layer="polished">
+              <span class="dot dot-amber"></span> AI-Polished
+            </label>
+            <label class="layer-toggle-btn active" data-layer="human">
+              <span class="dot dot-green"></span> Human
+            </label>
+            <label class="layer-toggle-btn active" data-layer="evasion">
+              <span class="dot dot-purple"></span> Evasion
+            </label>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <button id="btn-studio-receipt" class="btn-tool">
+            <span>🧾</span> Receipt
+          </button>
+          <button id="btn-studio-download" class="btn-tool btn-tool-accent">
+            <span>📥</span> Export PDF
+          </button>
+        </div>
       </div>
 
-      <div class="inspector-grid">
-        <!-- Upload Panel -->
-        <div class="card upload-panel">
-          <!-- Tabs -->
-          <div class="tab-row">
-            <button class="tab-btn active" data-tab="pdf">📄 PDF Upload</button>
-            <button class="tab-btn" data-tab="text">✏️ Paste Text</button>
-          </div>
-
-          <!-- PDF Upload Tab -->
-          <div id="tab-pdf" class="tab-body active">
-            <div id="drop-zone" class="drop-zone">
-              <div class="drop-icon">↑</div>
-              <p class="drop-title">Drop your PDF here</p>
-              <p class="drop-sub">or click to browse</p>
-              <input type="file" id="pdf-input" accept=".pdf" hidden>
-            </div>
-            <div id="file-info" class="file-info hidden">
-              <div class="file-icon">📄</div>
-              <div class="file-meta">
-                <span id="file-name" class="file-name">document.pdf</span>
-                <span id="file-size" class="file-size">0 KB</span>
-              </div>
-              <button id="btn-clear-file" class="btn-icon-sm" title="Remove file">✕</button>
-            </div>
-            <div id="pdf-extract-status" class="extract-status hidden">
-              <span id="extract-msg">Extracting text from PDF…</span>
-            </div>
-          </div>
-
-          <!-- Paste Text Tab -->
-          <div id="tab-text" class="tab-body">
-            <!-- Sample selectors -->
-            <div class="samples-row">
-              <span class="sample-label">Samples:</span>
-              <div class="sample-btns">
-                <button class="btn-sample active" data-sample="human">Human</button>
-                <button class="btn-sample" data-sample="ai">AI Generated</button>
-                <button class="btn-sample" data-sample="evasion">Bypass Attack</button>
-                <button class="btn-sample" data-sample="hybrid">Hybrid</button>
-              </div>
-            </div>
-            <div class="editor-wrap">
-              <textarea id="text-input" placeholder="Paste your essay or assignment here…&#10;(Minimum 50 words recommended for accurate metrics.)"></textarea>
-              <div class="editor-footer-row">
-                <span id="char-count">0 chars</span>
-                <span id="word-count">0 words</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action -->
-          <div class="action-bar">
-            <button id="btn-inspect" class="btn-primary full-width">
-              Run Integrity Inspection
-              <span class="btn-arrow">→</span>
+      <!-- Split Studio Layout -->
+      <div class="studio-split-layout">
+        
+        <!-- Left: Paper Document Canvas -->
+        <div class="studio-document-container" id="studio-doc-container">
+          
+          <div id="studio-doc-empty" class="doc-empty-state">
+            <div class="empty-icon-box">📄</div>
+            <h3>No Document Loaded Yet</h3>
+            <p>Paste text or upload a PDF in the Document Input tab to view the Murnitin Studio highlight canvas.</p>
+            <button class="btn-murnitin-cta-sm" onclick="document.getElementById('tab-nav-inspector').click();">
+              Go to Document Input
             </button>
           </div>
 
-          <p class="privacy-note">
-            🔒 100% client-side. No text is ever uploaded or stored.
-          </p>
-        </div>
-
-        <!-- Live Metric Sidebar -->
-        <div id="metric-sidebar" class="card metric-sidebar">
-          <div id="sidebar-empty" class="sidebar-state">
-            <div class="sidebar-icon">🔍</div>
-            <p>Run an inspection to<br>see live metrics here.</p>
-          </div>
-          <div id="sidebar-active" class="sidebar-state hidden">
-            <!-- Score Gauge -->
-            <div class="gauge-wrap">
-              <svg class="gauge-svg" viewBox="0 0 120 120">
-                <circle class="g-track" cx="60" cy="60" r="50"/>
-                <circle id="g-fill" class="g-fill" cx="60" cy="60" r="50"/>
-              </svg>
-              <div class="gauge-overlay">
-                <span id="score-pct" class="score-pct">0%</span>
-                <span class="score-lbl">AI Likelihood</span>
+          <!-- Document Paper Sheet -->
+          <div id="studio-paper-sheet" class="paper-sheet hidden">
+            <div class="paper-header-meta">
+              <div class="ph-meta-left">
+                <h2 id="paper-doc-title">Academic Document Submission</h2>
+                <p id="paper-doc-subtitle">Murnitin Integrity Scan &middot; Paper ID: <span id="paper-id-tag">MN-000000</span></p>
+              </div>
+              <div class="ph-meta-right">
+                <span id="paper-doc-date" class="paper-date-pill">Date</span>
               </div>
             </div>
 
-            <!-- Key Metrics -->
-            <div class="metric-list">
-              <div class="metric-row">
-                <span class="metric-key">Avg Perplexity</span>
-                <span id="m-perplexity" class="metric-val mono">—</span>
+            <div class="paper-divider"></div>
+
+            <!-- Dynamic Highlighted Document Content -->
+            <article id="highlight-map" class="paper-content-article"></article>
+
+            <div class="paper-footer-meta">
+              <span>Murnitin Integrity Studio &middot; Sentence-Level Evidence</span>
+              <span id="paper-page-indicator">Page 1 of 1</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Match Overview / Similarity Drawer -->
+        <aside class="studio-sidebar-drawer" id="metric-sidebar">
+          
+          <!-- Empty State -->
+          <div id="sidebar-empty" class="sidebar-empty-box">
+            <div class="sb-empty-icon">📊</div>
+            <h4>Match Overview</h4>
+            <p>Run an inspection to calculate overall AI Likelihood index and review sentence-level sources.</p>
+          </div>
+
+          <!-- Active Match Overview -->
+          <div id="sidebar-active" class="sidebar-active-content hidden">
+            
+            <!-- Murnitin Score Card -->
+            <div class="murnitin-score-card">
+              <div class="score-card-top">
+                <div class="score-badge-circle">
+                  <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                    <circle class="g-track" cx="60" cy="60" r="50"/>
+                    <circle id="g-fill" class="g-fill" cx="60" cy="60" r="50"/>
+                  </svg>
+                  <div class="radial-gauge-center">
+                    <span id="score-pct" class="score-number">0%</span>
+                    <span class="score-type">AI Likelihood</span>
+                  </div>
+                </div>
+
+                <div class="score-card-details">
+                  <span class="score-card-title">Similarity Index</span>
+                  <div id="m-verdict" class="verdict-pill">Analyzing...</div>
+                  <p class="score-card-desc" id="verdict-desc">Evaluation of token burstiness and lexical dispersion.</p>
+                </div>
               </div>
-              <div class="metric-row">
-                <span class="metric-key">Burstiness</span>
-                <span id="m-burstiness" class="metric-val mono">—</span>
+
+              <!-- Quick Metrics Grid -->
+              <div class="quick-metrics-row">
+                <div class="qm-cell">
+                  <span class="qm-val" id="m-sentences">0</span>
+                  <span class="qm-lbl">Sentences</span>
+                </div>
+                <div class="qm-cell">
+                  <span class="qm-val accent-val" id="m-ai-sents">0</span>
+                  <span class="qm-lbl">Flagged AI</span>
+                </div>
+                <div class="qm-cell">
+                  <span class="qm-val" id="m-burstiness">0.0</span>
+                  <span class="qm-lbl">Burstiness</span>
+                </div>
+                <div class="qm-cell">
+                  <span class="qm-val" id="m-evasion">None</span>
+                  <span class="qm-lbl">Evasion</span>
+                </div>
               </div>
-              <div class="metric-row">
-                <span class="metric-key">Sentences</span>
-                <span id="m-sentences" class="metric-val mono">—</span>
+            </div>
+
+            <!-- Drawer Tab Selector -->
+            <div class="drawer-nav-tabs">
+              <button class="drawer-tab active" data-dtab="matches" id="dtab-btn-matches">Match Breakdown</button>
+              <button class="drawer-tab" data-dtab="profile" id="dtab-btn-profile">Perplexity Profile</button>
+              <button class="drawer-tab" data-dtab="evasion" id="dtab-btn-evasion">Evasion Forensics</button>
+            </div>
+
+            <!-- Tab 1: Match Breakdown List -->
+            <div id="dtab-matches" class="drawer-tab-pane active">
+              <div class="match-list-header">
+                <span>Flagged Segments</span>
+                <span class="match-count-badge" id="match-count-badge">0 matches</span>
               </div>
-              <div class="metric-row">
-                <span class="metric-key">AI Sentences</span>
-                <span id="m-ai-sents" class="metric-val mono accent">—</span>
+              <div class="match-items-scroll" id="match-items-container">
+                <!-- Injected dynamically -->
               </div>
-              <div class="metric-row">
-                <span class="metric-key">Evasion Detected</span>
-                <span id="m-evasion" class="metric-val mono">—</span>
+            </div>
+
+            <!-- Tab 2: Perplexity Chart -->
+            <div id="dtab-profile" class="drawer-tab-pane">
+              <div class="perplexity-chart-card">
+                <h5>Sentence Perplexity Graph</h5>
+                <p class="chart-sub">Flat valleys represent uniform AI output; spikes indicate human variation.</p>
+                <div class="chart-wrapper">
+                  <canvas id="perplexity-chart" height="150"></canvas>
+                </div>
+                <div class="chart-stats-footer">
+                  <div>Avg Perplexity: <strong id="m-perplexity">0</strong></div>
+                </div>
               </div>
-              <div class="metric-row">
-                <span class="metric-key">Verdict</span>
-                <span id="m-verdict" class="metric-val verdict-text">—</span>
+            </div>
+
+            <!-- Tab 3: Evasion Forensics -->
+            <div id="dtab-evasion" class="drawer-tab-pane">
+              <div id="evasion-section" class="evasion-panel hidden">
+                <div class="evasion-alert-header">
+                  <span class="warn-icon">⚠️</span>
+                  <div>
+                    <h6>Adversarial Evasion Detected</h6>
+                    <p>Techniques designed to bypass standard AI detectors were discovered.</p>
+                  </div>
+                </div>
+                <div id="evasion-details" class="evasion-details-list"></div>
               </div>
+              <div id="evasion-clean-box" class="evasion-clean-panel">
+                <span class="clean-icon">✓</span>
+                <h6>No Adversarial Evasion Found</h6>
+                <p>Zero homoglyphs or hidden zero-width characters detected in the submission.</p>
+              </div>
+            </div>
+
+          </div>
+
+        </aside>
+
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────
+         SECTION 3: HOW IT WORKS / METHODOLOGY
+         ───────────────────────────────────────────── -->
+    <section id="section-methodology" class="workspace-section no-print">
+      <div class="container methodology-container">
+        <div class="method-header">
+          <span class="section-eyebrow">Explainable AI Architecture</span>
+          <h2>How Murnitin Evaluates Academic Integrity</h2>
+          <p>Murnitin avoids black-box verdicts by surfacing transparent, multi-dimensional linguistic metrics and forensic evasion verification.</p>
+        </div>
+
+        <div class="method-cards-grid">
+          <div class="method-card">
+            <div class="m-step">01</div>
+            <h3>PDF.js Client Extraction</h3>
+            <p>Documents are parsed client-side using JavaScript. No document files, student names, or texts are uploaded to any external server.</p>
+          </div>
+          <div class="method-card">
+            <div class="m-step">02</div>
+            <h3>Perplexity &amp; Burstiness</h3>
+            <p>Sentence-level statistical modeling evaluates n-gram predictability and burstiness variance across consecutive passages.</p>
+          </div>
+          <div class="method-card">
+            <div class="m-step">03</div>
+            <h3>Adversarial Forensics</h3>
+            <p>Deep scanning detects Cyrillic-to-Latin homoglyph replacements, zero-width joiners, and Unicode whitespace obfuscations.</p>
+          </div>
+          <div class="method-card">
+            <div class="m-step">04</div>
+            <h3>Verifiable Digital Receipts</h3>
+            <p>Produces cryptographic submission receipts with SHA-256 hashes and multi-page printable PDF reports.</p>
+          </div>
+        </div>
+
+        <!-- Compliance Card -->
+        <div class="murnitin-card compliance-summary-card">
+          <div class="card-sub-header">
+            <h3>Privacy &amp; Regulatory Compliance</h3>
+            <span class="badge-sub">Audit Standards</span>
+          </div>
+          <div class="compliance-grid">
+            <div class="compliance-item pass">
+              <span class="ci-icon">✓</span>
+              <div><strong>Zero-Knowledge Processing</strong><br><span>No text database storage or model retraining on student work.</span></div>
+            </div>
+            <div class="compliance-item pass">
+              <span class="ci-icon">✓</span>
+              <div><strong>GDPR Compliant</strong><br><span>Full data minimisation with ephemeral memory processing.</span></div>
+            </div>
+            <div class="compliance-item pass">
+              <span class="ci-icon">✓</span>
+              <div><strong>FERPA Compliant</strong><br><span>No personally identifiable education records retained.</span></div>
+            </div>
+            <div class="compliance-item pass">
+              <span class="ci-icon">✓</span>
+              <div><strong>Decision-Support Advisory</strong><br><span>Clear evidence trail designed for educator review, not automated punishment.</span></div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ── DIGITAL RECEIPT MODAL (Turnitin Workflow) ── -->
-  <div id="receipt-modal" class="modal-overlay hidden no-print">
-    <div class="modal-box">
-      <div class="modal-header">
-        <span class="modal-badge">Success</span>
-        <h2>Submission Received</h2>
-        <p>Your document has been securely processed by Murnitin.</p>
       </div>
-      <div class="receipt-card">
-        <div class="receipt-line">
-          <span class="rl-label">Submission ID</span>
-          <span id="receipt-id" class="rl-value mono">—</span>
-        </div>
-        <div class="receipt-line">
-          <span class="rl-label">Submission Title</span>
-          <span id="receipt-title" class="rl-value">—</span>
-        </div>
-        <div class="receipt-line">
-          <span class="rl-label">Submission Date</span>
-          <span id="receipt-date" class="rl-value">—</span>
-        </div>
-        <div class="receipt-line">
-          <span class="rl-label">Word Count</span>
-          <span id="receipt-words" class="rl-value mono">—</span>
-        </div>
-        <div class="receipt-line">
-          <span class="rl-label">Character Count</span>
-          <span id="receipt-chars" class="rl-value mono">—</span>
-        </div>
-        <div class="receipt-line">
-          <span class="rl-label">File Origin</span>
-          <span id="receipt-origin" class="rl-value">—</span>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button id="btn-modal-close" class="btn-primary">View Detailed Integrity Report</button>
-      </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- ── FULL REPORT ── -->
-  <section id="report" class="print-section">
-    <div class="container">
-      <div id="report-empty" class="report-empty-state no-print">
-        <div class="empty-icon">📋</div>
-        <p>Your integrity report will appear here after inspection.</p>
-      </div>
+    <!-- ─────────────────────────────────────────────
+         PRINT & EXPORT SECTION
+         (Hidden on screen, structured for PDF generator)
+         ───────────────────────────────────────────── -->
+    <section id="report" class="print-section">
+      <div id="report-empty" class="report-empty-state no-print hidden"></div>
 
-      <!-- Report content container, targeted by pdf downloader -->
       <div id="report-body" class="hidden">
-        
-        <!-- ── PRINT & PDF COVER PAGE (Page 1 of exported report) ── -->
+        <!-- Murnitin Cover Page Digital Receipt (Page 1) -->
         <div class="print-cover-page">
           <div class="print-receipt-container">
             <div class="print-receipt-header">
               <h1>MURNITIN DIGITAL RECEIPT</h1>
-              <p>This receipt confirms that your document was successfully received and analyzed by the Murnitin system.</p>
+              <p>This digital receipt confirms that your document was successfully received and analyzed by Murnitin Integrity Studio.</p>
             </div>
             <div class="print-receipt-body">
-              <div class="pr-line"><strong>Paper ID:</strong> <span class="print-val-id">MN-000000</span></div>
-              <div class="pr-line"><strong>Author:</strong> <span>Anonymous Student</span></div>
-              <div class="pr-line"><strong>Submission Title:</strong> <span class="print-val-title">Document</span></div>
-              <div class="pr-line"><strong>Submission Date:</strong> <span class="print-val-date">Date</span></div>
+              <div class="pr-line"><strong>Submission ID:</strong> <span class="print-val-id">MN-000000</span></div>
+              <div class="pr-line"><strong>Author:</strong> <span>Academic Submission</span></div>
+              <div class="pr-line"><strong>Document Title:</strong> <span class="print-val-title">Document</span></div>
+              <div class="pr-line"><strong>Submission Timestamp:</strong> <span class="print-val-date">Date</span></div>
               <div class="pr-line"><strong>Word Count:</strong> <span class="print-val-words">0</span></div>
               <div class="pr-line"><strong>Character Count:</strong> <span class="print-val-chars">0</span></div>
               <div class="pr-line"><strong>Integrity Hash:</strong> <span class="print-val-hash">SHA-256</span></div>
@@ -311,35 +529,22 @@
               </div>
               <div class="pr-verdict-box">
                 <div class="pr-verdict-val">Likely Human</div>
-                <div class="pr-verdict-desc">Linguistic Perplexity Profile conforms to organic writing patterns.</div>
+                <div class="pr-verdict-desc">Linguistic Perplexity Profile conforms to organic human writing patterns.</div>
               </div>
             </div>
             <div class="print-receipt-notice">
-              Developed by Md. Mehedi Hasan &middot; mdmehedihasan.us &middot; Zero-Knowledge Client-Side Analysis.
+              Murnitin Integrity Platform &middot; Built by Md. Mehedi Hasan (mdmehedihasan.us) &middot; Zero-Knowledge Client Verification.
             </div>
           </div>
         </div>
 
-        <!-- HTML-to-PDF pagebreak helper -->
         <div class="html2pdf__page-break"></div>
 
-        <!-- Web & PDF Detailed Report Header -->
-        <div class="report-header-bar no-print">
-          <div>
-            <span class="section-eyebrow">Integrity Report</span>
-            <h2 class="section-title">Analysis Complete</h2>
-          </div>
-          <div class="report-action-buttons">
-            <button id="btn-download-pdf" class="btn-primary">Download PDF Report</button>
-            <button id="btn-print" class="btn-secondary">Print Report</button>
-          </div>
-        </div>
-
-        <!-- Print-only Report Header (Appears at top of page 2 in PDF) -->
+        <!-- Page 2 Header -->
         <div class="print-header">
           <div class="ph-left">
             <h2>Murnitin Integrity Report</h2>
-            <p>Submission Title: <span class="print-val-title">Document</span> &middot; Paper ID: <span class="print-val-id">MN-000000</span></p>
+            <p>Title: <span class="print-val-title">Document</span> &middot; ID: <span class="print-val-id">MN-000000</span></p>
           </div>
           <div class="ph-right">
             <div class="ph-score">0%</div>
@@ -347,52 +552,17 @@
           </div>
         </div>
 
-        <!-- Summary Cards -->
         <div class="summary-cards" id="summary-cards"></div>
-
-        <!-- Evasion Forensics -->
-        <div id="evasion-section" class="report-block hidden">
-          <h3 class="report-block-title">⚠️ Adversarial Bypass Forensics</h3>
-          <div id="evasion-details" class="evasion-details"></div>
-        </div>
-
-        <!-- Sentence-Level Map -->
-        <div class="report-block">
-          <h3 class="report-block-title">Linguistic Highlight Map</h3>
-          <p class="report-block-sub no-print">Click any sentence to inspect its diagnostics. Hover to see perplexity.</p>
-          <div class="legend-row">
-            <span class="legend-item"><span class="ldot human"></span> Human</span>
-            <span class="legend-item"><span class="ldot polished"></span> AI-Polished</span>
-            <span class="legend-item"><span class="ldot ai-direct"></span> AI-Direct</span>
-            <span class="legend-item"><span class="ldot evasion"></span> Evasion Flag</span>
-          </div>
-          <div id="highlight-map" class="highlight-map"></div>
-        </div>
-
-        <!-- HTML-to-PDF pagebreak helper -->
-        <div class="html2pdf__page-break"></div>
-
-        <!-- Perplexity Chart (rendered in PDF as well) -->
-        <div class="report-block">
-          <h3 class="report-block-title">Perplexity Profile (Per Sentence)</h3>
-          <p class="report-block-sub">Low, flat lines indicate AI uniformity. High variance = human burstiness.</p>
-          <div class="chart-container">
-            <canvas id="perplexity-chart" height="120"></canvas>
-          </div>
-        </div>
-
-        <!-- HTML-to-PDF pagebreak helper -->
-        <div class="html2pdf__page-break"></div>
 
         <!-- Sentence Breakdown Table -->
         <div class="report-block">
-          <h3 class="report-block-title">Sentence-Level Breakdown</h3>
+          <h3 class="report-block-title">Sentence-by-Sentence Integrity Analysis</h3>
           <div class="table-wrap">
             <table id="sentence-table">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Sentence</th>
+                  <th>Sentence Passage</th>
                   <th>Perplexity</th>
                   <th>Classification</th>
                 </tr>
@@ -402,56 +572,114 @@
           </div>
         </div>
 
-        <!-- HTML-to-PDF pagebreak helper -->
-        <div class="html2pdf__page-break"></div>
-
-        <!-- Compliance Checklist -->
-        <div class="report-block">
-          <h3 class="report-block-title">Privacy &amp; Compliance Audit</h3>
-          <div class="compliance-grid">
-            <div class="compliance-item pass">
-              <span class="ci-icon">✓</span>
-              <div><strong>Zero-Knowledge Processing</strong><br><span>No raw text stored or transmitted. Processing is fully client-side.</span></div>
-            </div>
-            <div class="compliance-item pass">
-              <span class="ci-icon">✓</span>
-              <div><strong>GDPR — Data Minimisation</strong><br><span>Only cryptographic perplexity derivatives are retained in memory.</span></div>
-            </div>
-            <div class="compliance-item pass">
-              <span class="ci-icon">✓</span>
-              <div><strong>FERPA — Education Records</strong><br><span>No student identification data is processed or stored.</span></div>
-            </div>
-            <div class="compliance-item pass">
-              <span class="ci-icon">✓</span>
-              <div><strong>Decision-Support Only</strong><br><span>Report is advisory. Not intended as automated grounds for disciplinary action.</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer Notice -->
         <div class="report-footer-note">
-          <span class="mono">Murnitin v1.1</span> · Developed by <a href="https://mdmehedihasan.us" target="_blank">Md. Mehedi Hasan</a> · Report generated <span id="report-timestamp"></span>
+          <span>Murnitin v2.0 Integrity Studio &middot; Md. Mehedi Hasan &middot; Generated <span id="report-timestamp"></span></span>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ── FOOTER ── -->
+  </main>
+
+  <!-- ═══════════════════════════════════════════════
+       MOBILE BOTTOM ACTION BAR
+       ═══════════════════════════════════════════════ -->
+  <div class="mobile-bottom-bar no-print">
+    <button class="m-bottom-btn active" data-view="inspector" id="m-btn-input">
+      <span class="mb-icon">✏️</span>
+      <span class="mb-lbl">Input</span>
+    </button>
+    <button class="m-bottom-btn" data-view="studio" id="m-btn-studio">
+      <span class="mb-icon">📑</span>
+      <span class="mb-lbl">Document</span>
+    </button>
+    <button class="m-bottom-btn" id="m-btn-overview">
+      <span class="mb-score-dot" id="mb-dot-score">0%</span>
+      <span class="mb-lbl">Matches</span>
+    </button>
+    <button class="m-bottom-btn" id="m-btn-export">
+      <span class="mb-icon">📥</span>
+      <span class="mb-lbl">Export</span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       MURNITIN DIGITAL RECEIPT MODAL
+       ═══════════════════════════════════════════════ -->
+  <div id="receipt-modal" class="modal-overlay hidden no-print">
+    <div class="modal-box murnitin-receipt-box">
+      <div class="modal-header-murnitin">
+        <div class="murnitin-icon-banner">
+          <span class="t-receipt-icon">🧾</span>
+          <div>
+            <h3>Murnitin Digital Submission Receipt</h3>
+            <p>This confirms that Murnitin successfully received and indexed your document.</p>
+          </div>
+        </div>
+        <button id="btn-modal-x" class="btn-close-modal" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="receipt-card-grid">
+        <div class="rc-item">
+          <span class="rc-lbl">Submission ID:</span>
+          <span id="receipt-id" class="rc-val mono">MN-000000</span>
+        </div>
+        <div class="rc-item">
+          <span class="rc-lbl">Submission Title:</span>
+          <span id="receipt-title" class="rc-val">Assignment Document</span>
+        </div>
+        <div class="rc-item">
+          <span class="rc-lbl">Submission Date:</span>
+          <span id="receipt-date" class="rc-val">Timestamp</span>
+        </div>
+        <div class="rc-item">
+          <span class="rc-lbl">Word Count:</span>
+          <span id="receipt-words" class="rc-val mono">0 words</span>
+        </div>
+        <div class="rc-item">
+          <span class="rc-lbl">Character Count:</span>
+          <span id="receipt-chars" class="rc-val mono">0 chars</span>
+        </div>
+        <div class="rc-item">
+          <span class="rc-lbl">Source Origin:</span>
+          <span id="receipt-origin" class="rc-val">Direct Paste</span>
+        </div>
+      </div>
+
+      <div class="receipt-modal-actions">
+        <button id="btn-modal-close" class="btn-murnitin-cta">
+          Open Integrity Studio Canvas →
+        </button>
+        <button id="btn-download-pdf" class="btn-murnitin-secondary">
+          Download PDF Report
+        </button>
+        <button id="btn-print" class="btn-murnitin-ghost">
+          Print Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════ -->
   <footer class="site-footer no-print">
     <div class="container footer-inner">
-      <span>Murnitin — Academic Integrity Inspector</span>
-      <span>Built by <a href="https://mdmehedihasan.us" target="_blank">Md. Mehedi Hasan</a></span>
+      <div class="footer-left">
+        <strong>Murnitin Integrity Studio</strong> &middot; Academic Integrity &amp; Explainable AI
+      </div>
+      <div class="footer-right">
+        Built with precision by <a href="https://mdmehedihasan.us" target="_blank">Md. Mehedi Hasan</a>
+      </div>
     </div>
   </footer>
 
   <!-- PDF.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- jsPDF CDN (Programmatic PDF generation) -->
+  <!-- jsPDF CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- jsPDF AutoTable plugin -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script>
-    // Set PDF.js worker
     if (typeof pdfjsLib !== 'undefined') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }

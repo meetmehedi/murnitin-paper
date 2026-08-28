@@ -1,4 +1,7 @@
-/* ── Murnitin App.js ── */
+/* ══════════════════════════════════════════════════════════════
+   MURNITIN — TURNITIN FEEDBACK STUDIO CORE ENGINE
+   Built with precision by Md. Mehedi Hasan (mdmehedihasan.us)
+   ══════════════════════════════════════════════════════════════ */
 
 const isBrowserRuntime = typeof window !== 'undefined' && typeof document !== 'undefined';
 if (!isBrowserRuntime) {
@@ -9,147 +12,6 @@ if (!isBrowserRuntime) {
     process.exit(0);
   }
 }
-
-// ═══════════════════════════════════════════════
-// CUSTOM CURSOR
-// ═══════════════════════════════════════════════
-const cursorDot  = document.getElementById('cursor-dot');
-const cursorRing = document.getElementById('cursor-ring');
-
-let mouseX = 0, mouseY = 0;
-let ringX = 0, ringY = 0;
-
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  cursorDot.style.left  = mouseX + 'px';
-  cursorDot.style.top   = mouseY + 'px';
-});
-
-(function animateRing() {
-  ringX += (mouseX - ringX) * 0.12;
-  ringY += (mouseY - ringY) * 0.12;
-  cursorRing.style.left = ringX + 'px';
-  cursorRing.style.top  = ringY + 'px';
-  requestAnimationFrame(animateRing);
-})();
-
-document.querySelectorAll('a, button, [data-sample], .drop-zone, .hl-sent').forEach(el => {
-  el.addEventListener('mouseenter', () => document.body.classList.add('cursor-active'));
-  el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-active'));
-});
-
-// ═══════════════════════════════════════════════
-// SCROLL PROGRESS BAR
-// ═══════════════════════════════════════════════
-const progressBar = document.getElementById('progress-bar');
-window.addEventListener('scroll', () => {
-  const scrollTop    = window.scrollY;
-  const docHeight    = document.documentElement.scrollHeight - window.innerHeight;
-  const scrollPct    = (scrollTop / docHeight) * 100;
-  progressBar.style.width = scrollPct + '%';
-});
-
-// ═══════════════════════════════════════════════
-// NAV VISIBILITY
-// ═══════════════════════════════════════════════
-const nav = document.getElementById('nav');
-let lastScrollY = 0;
-
-window.addEventListener('scroll', () => {
-  const scrollY = window.scrollY;
-  if (scrollY > 80) {
-    nav.classList.add('visible');
-    if (scrollY > lastScrollY + 5) {
-      nav.classList.add('hide');
-    } else if (lastScrollY > scrollY + 5) {
-      nav.classList.remove('hide');
-    }
-  } else {
-    nav.classList.remove('visible');
-  }
-  lastScrollY = scrollY;
-
-  // Active nav link
-  const sections = ['hero', 'inspect', 'how', 'report'];
-  sections.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const link = document.querySelector(`.nav-pill a[href="#${id}"]`);
-    if (link) {
-      if (rect.top <= 100 && rect.bottom >= 100) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
-    }
-  });
-}, { passive: true });
-
-// ═══════════════════════════════════════════════
-// SCROLL REVEAL
-// ═══════════════════════════════════════════════
-const revealEls = document.querySelectorAll('.how-card, .card, .sum-card, .compliance-item, .report-block');
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-revealEls.forEach(el => {
-  el.classList.add('reveal');
-  revealObserver.observe(el);
-});
-
-// ═══════════════════════════════════════════════
-// PARTICLE CANVAS
-// ═══════════════════════════════════════════════
-const canvas = document.getElementById('particle-canvas');
-const ctx    = canvas.getContext('2d');
-
-let particles = [];
-let W, H;
-
-function resizeCanvas() {
-  W = canvas.width  = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-function randomBetween(a, b) { return a + Math.random() * (b - a); }
-
-for (let i = 0; i < 60; i++) {
-  particles.push({
-    x:     randomBetween(0, window.innerWidth),
-    y:     randomBetween(0, window.innerHeight),
-    r:     randomBetween(0.5, 1.8),
-    vx:    randomBetween(-0.15, 0.15),
-    vy:    randomBetween(-0.15, 0.15),
-    alpha: randomBetween(0.2, 0.7),
-  });
-}
-
-(function drawParticles() {
-  ctx.clearRect(0, 0, W, H);
-  particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    if (p.x < 0) p.x = W;
-    if (p.x > W) p.x = 0;
-    if (p.y < 0) p.y = H;
-    if (p.y > H) p.y = 0;
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(99,102,241,${p.alpha})`;
-    ctx.fill();
-  });
-  requestAnimationFrame(drawParticles);
-})();
 
 // ═══════════════════════════════════════════════
 // SAMPLE TEXTS
@@ -165,7 +27,7 @@ const SAMPLES = {
 };
 
 // ═══════════════════════════════════════════════
-// STATISTICAL ENGINE (Expanded Vocabulary)
+// STATISTICAL ENGINE VOCABULARY & FREQUENCIES
 // ═══════════════════════════════════════════════
 const BASE_FREQS = {
   "the":0.060,"of":0.035,"and":0.028,"a":0.022,"in":0.020,"to":0.019,
@@ -191,14 +53,7 @@ const BASE_FREQS = {
   "training":0.002,"prediction":0.002,"features":0.002,"set":0.002,
   "network":0.002,"deep":0.002,"machine":0.002,"neural":0.002,
   "accuracy":0.002,"dataset":0.002,"framework":0.002,"system":0.002,
-  "algorithm":0.002,"feature":0.002,"use":0.003,"information":0.002,
-  "customer":0.001,"lifetime":0.001,"clv":0.001,"ltv":0.0008,
-  "revenue":0.001,"purchase":0.001,"churn":0.001,"retention":0.001,
-  "transaction":0.001,"market":0.001,"digital":0.001,"commerce":0.001,
-  "forecast":0.001,"forecasting":0.001,"sparsity":0.0008,"sparse":0.001,
-  "zero":0.001,"inflated":0.0008,"lognormal":0.0008,"explainable":0.001,
-  "xai":0.0008,"interpretable":0.001,"interpretability":0.0008,
-  "precision":0.001,"recall":0.001,"f1":0.0008,"auc":0.0008
+  "algorithm":0.002,"feature":0.002,"use":0.003,"information":0.002
 };
 
 const AI_BOILERPLATE = new Set([
@@ -217,8 +72,7 @@ const AI_BOILERPLATE = new Set([
   "embark","foster","leverage","harness","propel","ascertain",
   "delineate","elucidate","underscore","encapsulate","epitomize",
   "elucidating","delineating","encapsulating","underpinning",
-  "posits","stipulates","mandates","necessitates","obviates",
-  "potentiates","ameliorates","exacerbates","precipitates"
+  "posits","stipulates","mandates","necessitates","obviates"
 ]);
 
 const HUMAN_MARKERS = new Set([
@@ -257,23 +111,15 @@ function sentencePerplexity(sentence) {
 }
 
 function cleanPDFText(text) {
-  // Rejoin soft-hyphenated words: "predic-\ntion" -> "prediction"
   let cleaned = text.replace(/-\s*\n\s*/g, '');
-  // Join line breaks that are mid-sentence
   cleaned = cleaned.replace(/(?<![.!?])\n(?!\n)/g, ' ');
-  // Collapse spaces
   cleaned = cleaned.replace(/\n{2,}/g, '\n').replace(/ {2,}/g, ' ');
-  // Remove citation brackets [1] and other academic noise
   cleaned = cleaned.replace(/\[\d+\]/g, '');
   cleaned = cleaned.replace(/\(\d{4}\)/g, '');
   cleaned = cleaned.replace(/Fig\.\s*\d+/gi, '');
   cleaned = cleaned.replace(/Table\s+\d+/gi, '');
-  return cleaned.strip ? cleaned.strip() : cleaned.trim();
+  return cleaned.trim();
 }
-
-// Global scope receipt cache to support PDF downloading
-let activeSubmissionId = "";
-let activeSubmissionTitle = "";
 
 function detectHidden(text) {
   const hidden = {'\u200b':'Zero-Width Space','\u200c':'ZWNJ','\u200d':'ZWJ','\ufeff':'BOM','\u00ad':'Soft Hyphen'};
@@ -364,105 +210,232 @@ function analyzeText(rawText) {
 }
 
 // ═══════════════════════════════════════════════
-// TAB SWITCHING
+// GLOBAL STATE & VARIABLES
 // ═══════════════════════════════════════════════
-let activeTab = 'pdf';
+let activeSubmissionId   = "MN-NEW";
+let activeSubmissionTitle = "Assignment Document";
+let currentAnalysisResult = null;
+let currentAnalysisText   = "";
+let extractedPDFText      = "";
+let currentFileName       = "";
+let currentFileSize       = "";
+let activeTab             = "text"; // 'text' or 'pdf'
+let currentView           = "inspector"; // 'inspector', 'studio', 'methodology'
 
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    activeTab = btn.dataset.tab;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-body').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + activeTab).classList.add('active');
+// ═══════════════════════════════════════════════
+// VIEW SWITCHER (Header Tabs & Mobile Bottom Bar)
+// ═══════════════════════════════════════════════
+function switchView(viewName) {
+  currentView = viewName;
+  
+  // Sections
+  document.querySelectorAll('.workspace-section').forEach(sec => sec.classList.remove('active'));
+  const targetSec = document.getElementById('section-' + viewName);
+  if (targetSec) targetSec.classList.add('active');
+
+  // Header Nav Tabs
+  document.querySelectorAll('.header-nav .nav-tab').forEach(tab => {
+    if (tab.dataset.view === viewName) tab.classList.add('active');
+    else tab.classList.remove('active');
+  });
+
+  // Mobile Bottom Bar
+  document.querySelectorAll('.m-bottom-btn').forEach(btn => {
+    if (btn.dataset.view === viewName) btn.classList.add('active');
+    else btn.classList.remove('active');
+  });
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('[data-view]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    const v = el.dataset.view;
+    if (v) switchView(v);
   });
 });
 
+const btnBackToInput = document.getElementById('btn-back-to-input');
+if (btnBackToInput) {
+  btnBackToInput.addEventListener('click', () => switchView('inspector'));
+}
+
 // ═══════════════════════════════════════════════
-// TEXT EDITOR — Samples & Counter
+// PROGRESS BAR & PARTICLES
+// ═══════════════════════════════════════════════
+const progressBar = document.getElementById('progress-bar');
+if (progressBar) {
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = scrollPct + '%';
+  }, { passive: true });
+}
+
+const particleCanvas = document.getElementById('particle-canvas');
+if (particleCanvas) {
+  const pctx = particleCanvas.getContext('2d');
+  let pW, pH;
+  let pList = [];
+
+  function resizeP() {
+    pW = particleCanvas.width = window.innerWidth;
+    pH = particleCanvas.height = window.innerHeight;
+  }
+  resizeP();
+  window.addEventListener('resize', resizeP);
+
+  for (let i = 0; i < 40; i++) {
+    pList.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: 0.8 + Math.random() * 1.5,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      alpha: 0.2 + Math.random() * 0.5
+    });
+  }
+
+  (function loopP() {
+    pctx.clearRect(0, 0, pW, pH);
+    pList.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = pW;
+      if (p.x > pW) p.x = 0;
+      if (p.y < 0) p.y = pH;
+      if (p.y > pH) p.y = 0;
+
+      pctx.beginPath();
+      pctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      pctx.fillStyle = `rgba(37,99,235,${p.alpha})`;
+      pctx.fill();
+    });
+    requestAnimationFrame(loopP);
+  })();
+}
+
+// ═══════════════════════════════════════════════
+// INPUT TAB SWITCHING & SAMPLE LOADERS
 // ═══════════════════════════════════════════════
 const textInput = document.getElementById('text-input');
 const charCount = document.getElementById('char-count');
 const wordCount = document.getElementById('word-count');
 
-textInput.value = SAMPLES.human;
-updateCounts();
-
 function updateCounts() {
+  if (!textInput) return;
   const t = textInput.value;
-  charCount.textContent = t.length + ' chars';
+  if (charCount) charCount.textContent = t.length + ' chars';
   const w = t.trim().split(/\s+/).filter(x => x.length > 0);
-  wordCount.textContent = w.length + ' words';
+  if (wordCount) wordCount.textContent = w.length + ' words';
+  
+  const hdrWords = document.getElementById('hdr-doc-words');
+  if (hdrWords) hdrWords.textContent = w.length;
 }
 
-textInput.addEventListener('input', updateCounts);
+if (textInput) {
+  textInput.value = SAMPLES.human;
+  updateCounts();
+  textInput.addEventListener('input', updateCounts);
+}
 
-document.querySelectorAll('.btn-sample').forEach(btn => {
+// Input Tabs (Text / PDF)
+document.querySelectorAll('.tab-row .tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.btn-sample').forEach(b => b.classList.remove('active'));
+    activeTab = btn.dataset.tab;
+    document.querySelectorAll('.tab-row .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.card-body-content .tab-body').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    textInput.value = SAMPLES[btn.dataset.sample];
-    updateCounts();
+    const tb = document.getElementById('tab-' + activeTab);
+    if (tb) tb.classList.add('active');
   });
 });
 
+// Sample Chips
+document.querySelectorAll('.sample-chips .chip-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sample-chips .chip-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const sType = btn.dataset.sample;
+    if (SAMPLES[sType] && textInput) {
+      // Switch to text tab if on PDF
+      const btnTabText = document.getElementById('btn-tab-text');
+      if (btnTabText) btnTabText.click();
+      textInput.value = SAMPLES[sType];
+      updateCounts();
+    }
+  });
+});
+
+// Clear Text Button
+const btnClearText = document.getElementById('btn-clear-text');
+if (btnClearText && textInput) {
+  btnClearText.addEventListener('click', () => {
+    textInput.value = '';
+    updateCounts();
+    textInput.focus();
+  });
+}
+
 // ═══════════════════════════════════════════════
-// PDF UPLOAD
+// PDF UPLOAD & PARSING
 // ═══════════════════════════════════════════════
-const dropZone   = document.getElementById('drop-zone');
-const pdfInput   = document.getElementById('pdf-input');
-const fileInfo   = document.getElementById('file-info');
-const fileName   = document.getElementById('file-name');
-const fileSizeEl = document.getElementById('file-size');
-const clearBtn   = document.getElementById('btn-clear-file');
+const dropZone      = document.getElementById('drop-zone');
+const pdfInput      = document.getElementById('pdf-input');
+const fileInfo      = document.getElementById('file-info');
+const fileName      = document.getElementById('file-name');
+const fileSizeEl    = document.getElementById('file-size');
+const clearBtn      = document.getElementById('btn-clear-file');
 const extractStatus = document.getElementById('pdf-extract-status');
 const extractMsg    = document.getElementById('extract-msg');
 
-let extractedPDFText = '';
-let currentFileName = '';
-let currentFileSize = '';
+if (dropZone && pdfInput) {
+  dropZone.addEventListener('click', () => pdfInput.click());
 
-dropZone.addEventListener('click', () => pdfInput.click());
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') handlePDFFile(file);
+  });
 
-dropZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropZone.classList.add('dragging');
-});
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragging');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type === 'application/pdf') handlePDFFile(file);
-});
+  pdfInput.addEventListener('change', () => {
+    if (pdfInput.files[0]) handlePDFFile(pdfInput.files[0]);
+  });
+}
 
-pdfInput.addEventListener('change', () => {
-  if (pdfInput.files[0]) handlePDFFile(pdfInput.files[0]);
-});
-
-clearBtn.addEventListener('click', () => {
-  extractedPDFText = '';
-  currentFileName = '';
-  currentFileSize = '';
-  pdfInput.value = '';
-  fileInfo.classList.add('hidden');
-  dropZone.classList.remove('hidden');
-  extractStatus.classList.add('hidden');
-});
+if (clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    extractedPDFText = '';
+    currentFileName = '';
+    currentFileSize = '';
+    if (pdfInput) pdfInput.value = '';
+    if (fileInfo) fileInfo.classList.add('hidden');
+    if (dropZone) dropZone.classList.remove('hidden');
+    if (extractStatus) extractStatus.classList.add('hidden');
+  });
+}
 
 async function handlePDFFile(file) {
   currentFileName = file.name;
   currentFileSize = (file.size / 1024).toFixed(1) + ' KB';
-  fileName.textContent  = currentFileName;
-  fileSizeEl.textContent = currentFileSize;
-  dropZone.classList.add('hidden');
-  fileInfo.classList.remove('hidden');
-  extractStatus.classList.remove('hidden');
-  extractMsg.textContent = 'Extracting text from PDF…';
+  if (fileName) fileName.textContent  = currentFileName;
+  if (fileSizeEl) fileSizeEl.textContent = currentFileSize;
+  if (dropZone) dropZone.classList.add('hidden');
+  if (fileInfo) fileInfo.classList.remove('hidden');
+  if (extractStatus) extractStatus.classList.remove('hidden');
+  if (extractMsg) extractMsg.textContent = 'Parsing PDF text layers client-side…';
 
   try {
     if (typeof pdfjsLib === 'undefined') {
-      throw new Error('PDF.js not loaded');
+      throw new Error('PDF.js library is loading. Please wait a moment and retry.');
     }
 
     const arrayBuffer = await file.arrayBuffer();
@@ -470,7 +443,7 @@ async function handlePDFFile(file) {
 
     let fullText = '';
     for (let i = 1; i <= pdf.numPages; i++) {
-      extractMsg.textContent = `Extracting page ${i} of ${pdf.numPages}…`;
+      if (extractMsg) extractMsg.textContent = `Extracting page ${i} of ${pdf.numPages}…`;
       const page    = await pdf.getPage(i);
       const content = await page.getTextContent();
       const pageText = content.items.map(item => item.str).join(' ');
@@ -478,53 +451,42 @@ async function handlePDFFile(file) {
     }
 
     extractedPDFText = fullText.trim();
-    extractMsg.textContent = `✓ Extracted ${extractedPDFText.split(/\s+/).length} words from ${pdf.numPages} page(s). Ready to inspect.`;
+    const wCount = extractedPDFText.split(/\s+/).filter(x => x.length > 0).length;
+    if (extractMsg) {
+      extractMsg.textContent = `✓ Successfully extracted ${wCount} words across ${pdf.numPages} page(s). Ready for Murnitin inspection.`;
+    }
   } catch (err) {
-    extractMsg.textContent = '⚠ Could not extract text from PDF. Try copy-pasting into the text tab instead.';
+    if (extractMsg) {
+      extractMsg.textContent = '⚠ Could not parse PDF client-side. You can copy-paste into the Plain Text tab.';
+    }
     console.error(err);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// ENGINE INDICATOR
+// ═══════════════════════════════════════════════
+function setEngineIndicator(mode) {
+  const el = document.getElementById('engine-indicator');
+  if (!el) return;
+  if (mode === 'ml') {
+    el.textContent = 'RoBERTa ML Model';
+    el.style.background = 'rgba(34, 197, 94, 0.25)';
+    el.style.color = '#86efac';
+  } else {
+    el.textContent = 'Statistical Engine';
+    el.style.background = 'rgba(37, 99, 235, 0.3)';
+    el.style.color = '#93c5fd';
   }
 }
 
 // ═══════════════════════════════════════════════
 // RUN INSPECTION & RECEIPT MODAL
 // ═══════════════════════════════════════════════
-// RUN INSPECTION — ML Server first, heuristic fallback
-// ═══════════════════════════════════════════════
 const btnInspect   = document.getElementById('btn-inspect');
 const receiptModal = document.getElementById('receipt-modal');
 const modalClose   = document.getElementById('btn-modal-close');
-
-let currentAnalysisResult = null;
-let currentAnalysisText   = "";
-
-// Engine indicator: shows whether ML or heuristic was used
-function setEngineIndicator(mode) {
-  let el = document.getElementById('engine-indicator');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'engine-indicator';
-    el.style.cssText = `
-      position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-      padding: 8px 14px; border-radius: 20px; font-size: 11px;
-      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.03em;
-      transition: all 0.4s ease; pointer-events: none;
-    `;
-    document.body.appendChild(el);
-  }
-  if (mode === 'ml') {
-    el.textContent = '🤖 ML Model (RoBERTa) — High Accuracy';
-    el.style.background = 'rgba(99,102,241,0.15)';
-    el.style.border = '1px solid rgba(99,102,241,0.4)';
-    el.style.color = '#a5b4fc';
-  } else {
-    el.textContent = '⚡ Statistical Heuristic — Start ML server for accuracy';
-    el.style.background = 'rgba(234,179,8,0.15)';
-    el.style.border = '1px solid rgba(234,179,8,0.4)';
-    el.style.color = '#fde047';
-  }
-  setTimeout(() => { el.style.opacity = '0'; }, 6000);
-  el.style.opacity = '1';
-}
+const modalX       = document.getElementById('btn-modal-x');
 
 function applyReceiptAndModal(result, text, origin) {
   currentAnalysisResult = result;
@@ -536,15 +498,44 @@ function applyReceiptAndModal(result, text, origin) {
   const charCountVal   = text.length;
   activeSubmissionTitle = activeTab === 'pdf'
     ? currentFileName.replace(/\.[^/.]+$/, "")
-    : text.slice(0, 30) + '...';
+    : (text.length > 40 ? text.slice(0, 40) + '…' : text);
 
-  document.getElementById('receipt-id').textContent     = activeSubmissionId;
-  document.getElementById('receipt-title').textContent  = activeSubmissionTitle;
-  document.getElementById('receipt-date').textContent   = submissionDate;
-  document.getElementById('receipt-words').textContent  = wordCountVal;
-  document.getElementById('receipt-chars').textContent  = charCountVal;
-  document.getElementById('receipt-origin').textContent = origin;
+  // Update Header & Paper Title Tags
+  const hdrId = document.getElementById('hdr-doc-id');
+  if (hdrId) hdrId.textContent = activeSubmissionId;
 
+  const studioTitle = document.getElementById('studio-doc-title');
+  if (studioTitle) studioTitle.textContent = activeSubmissionTitle;
+
+  const paperTitle = document.getElementById('paper-doc-title');
+  if (paperTitle) paperTitle.textContent = activeSubmissionTitle;
+
+  const paperIdTag = document.getElementById('paper-id-tag');
+  if (paperIdTag) paperIdTag.textContent = activeSubmissionId;
+
+  const paperDate = document.getElementById('paper-doc-date');
+  if (paperDate) paperDate.textContent = submissionDate;
+
+  // Receipts
+  const rId = document.getElementById('receipt-id');
+  if (rId) rId.textContent = activeSubmissionId;
+
+  const rTitle = document.getElementById('receipt-title');
+  if (rTitle) rTitle.textContent = activeSubmissionTitle;
+
+  const rDate = document.getElementById('receipt-date');
+  if (rDate) rDate.textContent = submissionDate;
+
+  const rWords = document.getElementById('receipt-words');
+  if (rWords) rWords.textContent = wordCountVal.toLocaleString() + ' words';
+
+  const rChars = document.getElementById('receipt-chars');
+  if (rChars) rChars.textContent = charCountVal.toLocaleString() + ' chars';
+
+  const rOrigin = document.getElementById('receipt-origin');
+  if (rOrigin) rOrigin.textContent = origin;
+
+  // Print Cover Val sync
   document.querySelectorAll('.print-val-id').forEach(el => el.textContent = activeSubmissionId);
   document.querySelectorAll('.print-val-title').forEach(el => el.textContent = activeSubmissionTitle);
   document.querySelectorAll('.print-val-date').forEach(el => el.textContent = submissionDate);
@@ -554,232 +545,392 @@ function applyReceiptAndModal(result, text, origin) {
     el.textContent = 'mn256_' + Math.random().toString(16).substr(2, 16);
   });
 
-  document.querySelector('.pr-gauge-pct').textContent   = result.score + '%';
-  document.querySelector('.pr-verdict-val').textContent = result.verdict;
+  const prGauge = document.querySelector('.pr-gauge-pct');
+  if (prGauge) prGauge.textContent = result.score + '%';
 
-  let prVerdictDesc = 'Linguistic profile conforms to organic human writing patterns.';
-  if (result.score >= 80)       prVerdictDesc = 'High-density AI signatures detected — uniform entropy and boilerplate transitions.';
-  else if (result.score >= 55)  prVerdictDesc = 'Significant AI-assistance indicators found in sentence structure and vocabulary.';
-  else if (result.score >= 25)  prVerdictDesc = 'Mixed signals — possible human-AI collaborative authoring or heavy editing.';
-  if (result.hasEvasion)        prVerdictDesc = 'Adversarial bypass markers found — homoglyphs or invisible Unicode characters present.';
-  document.querySelector('.pr-verdict-desc').textContent = prVerdictDesc;
+  const prVerdict = document.querySelector('.pr-verdict-val');
+  if (prVerdict) prVerdict.textContent = result.verdict;
 
-  receiptModal.classList.remove('hidden');
+  // Unhide Header quick action buttons
+  const btnHdrReceipt = document.getElementById('btn-hdr-receipt');
+  if (btnHdrReceipt) btnHdrReceipt.classList.remove('hidden');
+
+  const btnHdrDownload = document.getElementById('btn-hdr-download');
+  if (btnHdrDownload) btnHdrDownload.classList.remove('hidden');
+
+  // Mini score badge for mobile
+  const mbScore = document.getElementById('mobile-score-badge');
+  if (mbScore) {
+    mbScore.textContent = result.score + '%';
+    mbScore.style.background = result.score < 25 ? 'var(--t-green)' : result.score < 80 ? 'var(--t-amber)' : 'var(--t-red)';
+  }
+  const mbDot = document.getElementById('mb-dot-score');
+  if (mbDot) {
+    mbDot.textContent = result.score + '%';
+    mbDot.style.background = result.score < 25 ? 'var(--t-green)' : result.score < 80 ? 'var(--t-amber)' : 'var(--t-red)';
+  }
+
+  // Open modal
+  if (receiptModal) receiptModal.classList.remove('hidden');
 }
 
-btnInspect.addEventListener('click', async () => {
-  let text = '';
-  let origin = 'Text Editor';
+if (btnInspect) {
+  btnInspect.addEventListener('click', async () => {
+    let text = '';
+    let origin = 'Text Editor';
 
-  if (activeTab === 'pdf') {
-    if (!extractedPDFText) {
-      extractMsg.textContent = '⚠ Please upload a PDF first.';
-      extractStatus.classList.remove('hidden');
+    if (activeTab === 'pdf') {
+      if (!extractedPDFText) {
+        if (extractMsg) extractMsg.textContent = '⚠ Please upload a PDF first.';
+        if (extractStatus) extractStatus.classList.remove('hidden');
+        return;
+      }
+      text = extractedPDFText;
+      origin = currentFileName;
+    } else {
+      text = textInput ? textInput.value.trim() : '';
+    }
+
+    if (!text || text.split(/\s+/).length < 10) {
+      alert('Please provide at least 10 words for Murnitin analysis.');
       return;
     }
-    text = extractedPDFText;
-    origin = currentFileName;
-  } else {
-    text = textInput.value.trim();
-  }
 
-  if (!text || text.split(/\s+/).length < 10) {
-    alert('Please provide at least 10 words for analysis.');
-    return;
-  }
+    btnInspect.disabled = true;
+    const btnLabel = btnInspect.querySelector('.btn-label') || btnInspect;
+    const origText = btnLabel.textContent;
+    btnLabel.textContent = '🔬 Running Murnitin Inspection…';
 
-  btnInspect.disabled = true;
-  btnInspect.textContent = '🔬 Analyzing with ML Model…';
+    try {
+      // ── Try ML server first ──
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000);
 
-  try {
-    // ── Try ML server first (RoBERTa model, same port) ──────────────────────
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
 
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
+      if (!response.ok) throw new Error(`Server error ${response.status}`);
+      const result = await response.json();
+      if (result.error) throw new Error(result.error);
 
-    if (!response.ok) throw new Error(`Server error ${response.status}`);
-    const result = await response.json();
+      if (!result.verdictClass) {
+        result.verdictClass = result.score < 25 ? 'green' : result.score < 80 ? 'amber' : 'red';
+      }
 
-    if (result.error) throw new Error(result.error);
-
-    // Server returns verdict without verdictClass — add it
-    if (!result.verdictClass) {
-      result.verdictClass = result.score < 25 ? 'green' : result.score < 80 ? 'yellow' : 'red';
-    }
-
-    setEngineIndicator('ml');
-    applyReceiptAndModal(result, text, origin);
-
-  } catch (err) {
-    // ── Fallback to client-side heuristic ───────────────────────────────────
-    const isOffline = err.name === 'AbortError' || err.message.includes('fetch') || err.message.includes('Failed');
-    if (isOffline) {
-      console.warn('ML server unreachable — using statistical heuristic. Start murnitin_server.py for accurate results.');
-    } else {
-      console.warn('ML server error:', err.message, '— falling back to heuristic.');
-    }
-
-    setEngineIndicator('heuristic');
-
-    const result = analyzeText(text);
-    if (result) {
+      setEngineIndicator('ml');
       applyReceiptAndModal(result, text, origin);
+
+    } catch (err) {
+      console.warn('Using client-side statistical engine:', err.message);
+      setEngineIndicator('heuristic');
+
+      const result = analyzeText(text);
+      if (result) {
+        applyReceiptAndModal(result, text, origin);
+      }
     }
-  }
 
-  btnInspect.disabled = false;
-  btnInspect.textContent = 'Run Integrity Inspection';
-});
+    btnInspect.disabled = false;
+    btnLabel.textContent = origText;
+  });
+}
 
-modalClose.addEventListener('click', () => {
-  receiptModal.classList.add('hidden');
+// Modal Close & Switch to Feedback Studio
+function closeReceiptAndOpenStudio() {
+  if (receiptModal) receiptModal.classList.add('hidden');
   if (currentAnalysisResult) {
-    renderSidebar(currentAnalysisResult);
-    renderReport(currentAnalysisResult, currentAnalysisText);
+    renderStudioDocument(currentAnalysisResult, currentAnalysisText);
+    renderSidebarDrawer(currentAnalysisResult);
+    renderPrintReport(currentAnalysisResult, currentAnalysisText);
   }
-  document.getElementById('report').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  switchView('studio');
+}
+
+if (modalClose) modalClose.addEventListener('click', closeReceiptAndOpenStudio);
+if (modalX) modalX.addEventListener('click', () => {
+  if (receiptModal) receiptModal.classList.add('hidden');
 });
 
-// ═══════════════════════════════════════════════
-// RENDER SIDEBAR
-// ═══════════════════════════════════════════════
-function renderSidebar(r) {
-  document.getElementById('sidebar-empty').classList.add('hidden');
-  document.getElementById('sidebar-active').classList.remove('hidden');
+const btnHdrReceipt = document.getElementById('btn-hdr-receipt');
+if (btnHdrReceipt) {
+  btnHdrReceipt.addEventListener('click', () => {
+    if (receiptModal) receiptModal.classList.remove('hidden');
+  });
+}
 
-  // Gauge
-  const gFill = document.getElementById('g-fill');
-  const circumference = 314.16;
-  const offset = circumference - (circumference * r.score / 100);
-  gFill.style.strokeDashoffset = offset;
-  if (r.score < 25)      gFill.style.stroke = '#22c55e';
-  else if (r.score < 65) gFill.style.stroke = '#eab308';
-  else                   gFill.style.stroke = '#ef4444';
-
-  document.getElementById('score-pct').textContent      = r.score + '%';
-  document.getElementById('m-perplexity').textContent   = r.avg.toFixed(1);
-  document.getElementById('m-burstiness').textContent   = r.burstiness.toFixed(1);
-  document.getElementById('m-sentences').textContent    = r.sentences.length;
-  document.getElementById('m-ai-sents').textContent     = r.aiSentences;
-  document.getElementById('m-evasion').textContent      = r.hasEvasion ? '⚠ YES' : '✓ None';
-  document.getElementById('m-evasion').style.color      = r.hasEvasion ? 'var(--red)' : 'var(--green)';
-
-  const verdictEl = document.getElementById('m-verdict');
-  verdictEl.textContent  = r.verdict;
-  verdictEl.style.color  = `var(--${r.verdictClass})`;
+const btnStudioReceipt = document.getElementById('btn-studio-receipt');
+if (btnStudioReceipt) {
+  btnStudioReceipt.addEventListener('click', () => {
+    if (receiptModal) receiptModal.classList.remove('hidden');
+  });
 }
 
 // ═══════════════════════════════════════════════
-// RENDER REPORT
+// RENDER TURNITIN PAPER DOCUMENT CANVAS
 // ═══════════════════════════════════════════════
-function renderReport(r, rawText) {
-  document.getElementById('report-empty').classList.add('hidden');
-  document.getElementById('report-body').classList.remove('hidden');
+function renderStudioDocument(r, rawText) {
+  const emptyBox = document.getElementById('studio-doc-empty');
+  const paperSheet = document.getElementById('studio-paper-sheet');
+  const highlightMap = document.getElementById('highlight-map');
 
-  // Timestamp
-  document.getElementById('report-timestamp').textContent = new Date().toLocaleString();
+  if (emptyBox) emptyBox.classList.add('hidden');
+  if (paperSheet) paperSheet.classList.remove('hidden');
+  if (!highlightMap) return;
 
-  // Update print headers
-  document.querySelectorAll('.ph-score').forEach(el => el.textContent = r.score + '%');
+  highlightMap.innerHTML = '';
 
-  // Summary Cards
-  const cards = [
-    { label: 'AI Likelihood',  value: r.score + '%',                    cls: r.score < 25 ? 'green' : r.score < 65 ? 'yellow' : 'red' },
-    { label: 'Avg Perplexity', value: r.avg.toFixed(1),                 cls: '' },
-    { label: 'Burstiness',     value: r.burstiness.toFixed(1),          cls: '' },
-    { label: 'Verdict',        value: r.verdict,                        cls: r.verdictClass },
-  ];
-
-  document.getElementById('summary-cards').innerHTML = cards.map(c => `
-    <div class="sum-card">
-      <span class="sum-label">${c.label}</span>
-      <span class="sum-value ${c.cls}">${c.value}</span>
-    </div>
-  `).join('');
-
-  // Evasion Section
-  const evasionSection = document.getElementById('evasion-section');
-  if (r.hasEvasion) {
-    evasionSection.classList.remove('hidden');
-    let html = '';
-    r.hiddenChars.forEach(h => {
-      html += `<div class="evasion-item">${h.count}× <strong>${h.name}</strong> found — invisible character inserted to break word recognition in standard detectors.</div>`;
-    });
-    if (r.homoglyphs.length > 0) {
-      html += `<div class="evasion-item">Mixed-script homoglyphs detected in ${r.homoglyphs.length} word(s): <strong>${r.homoglyphs.slice(0,5).join(', ')}</strong> — Cyrillic characters substituted for visually identical Latin letters.</div>`;
-    }
-    document.getElementById('evasion-details').innerHTML = html;
-  } else {
-    evasionSection.classList.add('hidden');
-  }
-
-  // Highlight Map
-  const mapEl = document.getElementById('highlight-map');
-  mapEl.innerHTML = '';
-  r.sentences.forEach(s => {
+  let matchIndex = 1;
+  r.sentences.forEach((s) => {
     const span = document.createElement('span');
     span.className = 'hl-sent ' + s.classification;
-    span.textContent = s.text + ' ';
-    span.title = `Perplexity: ${s.perplexity.toFixed(1)} | Class: ${s.classification}`;
+    span.id = `sent-block-${s.idx}`;
+
+    // Tag badge for flagged sentences
+    let tagHtml = '';
+    if (s.classification === 'ai_direct') {
+      tagHtml = `<span class="hl-tag-badge">${matchIndex++}</span>`;
+    } else if (s.classification === 'ai_polished') {
+      tagHtml = `<span class="hl-tag-badge">${matchIndex++}</span>`;
+    }
+
+    span.innerHTML = tagHtml + escapeHtml(s.text) + ' ';
+    span.title = `Sentence #${s.idx + 1} | Perplexity: ${s.perplexity.toFixed(1)} | Class: ${s.classification}`;
+
     span.addEventListener('click', () => {
-      const cls = { human: '🟢 Human', ai_direct: '🔴 AI-Direct', ai_polished: '🟡 AI-Polished' }[s.classification] || s.classification;
-      alert(`Sentence ${s.idx + 1}\n\nClassification: ${cls}\nPseudo-Perplexity: ${s.perplexity.toFixed(2)}\n\n"${s.text}"`);
+      // Remove previous active focus
+      document.querySelectorAll('.hl-sent.active-focus').forEach(el => el.classList.remove('active-focus'));
+      span.classList.add('active-focus');
+
+      // If drawer match item exists, scroll it
+      const matchCard = document.getElementById(`match-card-${s.idx}`);
+      if (matchCard) {
+        matchCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        matchCard.style.boxShadow = '0 0 0 2px var(--t-blue)';
+        setTimeout(() => { matchCard.style.boxShadow = ''; }, 2000);
+      }
     });
-    mapEl.appendChild(span);
+
+    highlightMap.appendChild(span);
   });
-
-  // Perplexity Chart
-  drawChart(r.sentences);
-
-  // Sentence Table
-  const tbody = document.getElementById('sentence-tbody');
-  tbody.innerHTML = r.sentences.map(s => {
-    const clsMap = { human: 'class-human', ai_direct: 'class-ai', ai_polished: 'class-polished' };
-    const labelMap = { human: 'HUMAN', ai_direct: 'AI-DIRECT', ai_polished: 'AI-POLISHED' };
-    return `
-      <tr>
-        <td class="mono" style="color:var(--text-3); font-size:11px;">${String(s.idx + 1).padStart(2,'0')}</td>
-        <td style="font-size:13px; color:var(--text-2); max-width:440px;">${truncate(s.text, 120)}</td>
-        <td class="mono" style="font-size:12px;">${s.perplexity.toFixed(1)}</td>
-        <td class="${clsMap[s.classification] || ''}">${labelMap[s.classification] || s.classification}</td>
-      </tr>
-    `;
-  }).join('');
 }
 
-function truncate(str, max) {
-  return str.length > max ? str.slice(0, max) + '…' : str;
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // ═══════════════════════════════════════════════
-// PERPLEXITY CHART (Vanilla Canvas)
+// RENDER TURNITIN MATCH OVERVIEW (SIDEBAR DRAWER)
 // ═══════════════════════════════════════════════
-function drawChart(sentences) {
+function renderSidebarDrawer(r) {
+  const emptyState = document.getElementById('sidebar-empty');
+  const activeState = document.getElementById('sidebar-active');
+
+  if (emptyState) emptyState.classList.add('hidden');
+  if (activeState) activeState.classList.remove('hidden');
+
+  // Radial Score Gauge
+  const gFill = document.getElementById('g-fill');
+  const circumference = 314.159;
+  const offset = circumference - (circumference * r.score / 100);
+  if (gFill) {
+    gFill.style.strokeDashoffset = offset;
+    gFill.style.stroke = r.score < 25 ? 'var(--t-green)' : r.score < 80 ? 'var(--t-amber)' : 'var(--t-red)';
+  }
+
+  const scorePct = document.getElementById('score-pct');
+  if (scorePct) scorePct.textContent = r.score + '%';
+
+  const verdictEl = document.getElementById('m-verdict');
+  if (verdictEl) {
+    verdictEl.textContent = r.verdict;
+    verdictEl.className = 'verdict-pill ' + (r.score < 25 ? 'green' : r.score < 80 ? 'amber' : 'red');
+  }
+
+  const vDescEl = document.getElementById('verdict-desc');
+  if (vDescEl) {
+    if (r.score >= 80) vDescEl.textContent = 'High probability of machine-generated prose.';
+    else if (r.score >= 55) vDescEl.textContent = 'Substantial AI-assistance or paraphrasing detected.';
+    else if (r.score >= 25) vDescEl.textContent = 'Mixed indicators — collaborative editing or mild AI polish.';
+    else vDescEl.textContent = 'Linguistic variation aligns with organic human writing.';
+  }
+
+  // Quick metrics
+  const mSents = document.getElementById('m-sentences');
+  if (mSents) mSents.textContent = r.sentences.length;
+
+  const mAiSents = document.getElementById('m-ai-sents');
+  if (mAiSents) mAiSents.textContent = r.aiSentences;
+
+  const mBurst = document.getElementById('m-burstiness');
+  if (mBurst) mBurst.textContent = r.burstiness.toFixed(1);
+
+  const mEvasion = document.getElementById('m-evasion');
+  if (mEvasion) {
+    mEvasion.textContent = r.hasEvasion ? '⚠️ Flagged' : '✓ None';
+    mEvasion.style.color = r.hasEvasion ? 'var(--t-red)' : 'var(--t-green)';
+  }
+
+  const mPerp = document.getElementById('m-perplexity');
+  if (mPerp) mPerp.textContent = r.avg.toFixed(1);
+
+  // Match Breakdown Cards
+  const matchContainer = document.getElementById('match-items-container');
+  const matchBadge = document.getElementById('match-count-badge');
+  if (matchContainer) {
+    matchContainer.innerHTML = '';
+    const flagged = r.sentences.filter(s => s.classification !== 'human');
+    if (matchBadge) matchBadge.textContent = `${flagged.length} flagged`;
+
+    if (flagged.length === 0) {
+      matchContainer.innerHTML = `
+        <div style="text-align:center; padding: 2rem 1rem; color:var(--text-muted); font-size:0.85rem;">
+          <span style="font-size:1.5rem; display:block; margin-bottom:0.25rem;">✨</span>
+          No high-confidence AI matches found in this document.
+        </div>
+      `;
+    } else {
+      flagged.forEach((s, idx) => {
+        const card = document.createElement('div');
+        const isPolished = s.classification === 'ai_polished';
+        card.className = `match-card-item ${isPolished ? 'polished-card' : ''}`;
+        card.id = `match-card-${s.idx}`;
+
+        card.innerHTML = `
+          <div class="match-card-header">
+            <span class="match-tag-text">${isPolished ? '🟡 AI-Polished' : '🔴 AI-Direct'} Match #${idx + 1}</span>
+            <span class="match-score-text">PPX: ${s.perplexity.toFixed(1)}</span>
+          </div>
+          <p class="match-card-snippet">"${escapeHtml(s.text)}"</p>
+        `;
+
+        card.addEventListener('click', () => {
+          const targetSpan = document.getElementById(`sent-block-${s.idx}`);
+          if (targetSpan) {
+            targetSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.querySelectorAll('.hl-sent.active-focus').forEach(el => el.classList.remove('active-focus'));
+            targetSpan.classList.add('active-focus');
+          }
+        });
+
+        matchContainer.appendChild(card);
+      });
+    }
+  }
+
+  // Perplexity Profile Chart
+  drawPerplexityChart(r.sentences);
+
+  // Evasion Tab Details
+  const evSection = document.getElementById('evasion-section');
+  const evCleanBox = document.getElementById('evasion-clean-box');
+  const evDetails = document.getElementById('evasion-details');
+
+  if (r.hasEvasion) {
+    if (evSection) evSection.classList.remove('hidden');
+    if (evCleanBox) evCleanBox.classList.add('hidden');
+    if (evDetails) {
+      let html = '';
+      r.hiddenChars.forEach(h => {
+        html += `<div style="padding:0.4rem; background:#fee2e2; border-radius:4px; color:#991b1b;">
+          <strong>${h.count}× ${h.name}</strong> — invisible character inserted.
+        </div>`;
+      });
+      if (r.homoglyphs.length > 0) {
+        html += `<div style="padding:0.4rem; background:#fee2e2; border-radius:4px; color:#991b1b;">
+          <strong>${r.homoglyphs.length} Mixed-script homoglyphs:</strong> ${r.homoglyphs.slice(0,5).join(', ')}
+        </div>`;
+      }
+      evDetails.innerHTML = html;
+    }
+  } else {
+    if (evSection) evSection.classList.add('hidden');
+    if (evCleanBox) evCleanBox.classList.remove('hidden');
+  }
+}
+
+// Drawer Tabs Switching
+document.querySelectorAll('.drawer-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.dtab;
+    document.querySelectorAll('.drawer-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.drawer-tab-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const pane = document.getElementById('dtab-' + target);
+    if (pane) pane.classList.add('active');
+  });
+});
+
+// Layer Filter Toggles
+document.querySelectorAll('.layer-toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const layer = btn.dataset.layer;
+    btn.classList.toggle('active');
+    const isActive = btn.classList.contains('active');
+
+    let selector = '';
+    if (layer === 'ai') selector = '.hl-sent.ai_direct, .hl-sent.ai';
+    else if (layer === 'polished') selector = '.hl-sent.polished, .hl-sent.ai_polished';
+    else if (layer === 'human') selector = '.hl-sent.human';
+    else if (layer === 'evasion') selector = '.hl-sent.evasion';
+
+    if (selector) {
+      document.querySelectorAll(selector).forEach(el => {
+        el.style.opacity = isActive ? '1' : '0.25';
+        el.style.background = isActive ? '' : 'transparent';
+      });
+    }
+  });
+});
+
+// Mobile Drawer Toggle
+const btnMobileToggle = document.getElementById('btn-mobile-drawer-toggle');
+const mBtnOverview = document.getElementById('m-btn-overview');
+const sidebarDrawer = document.getElementById('metric-sidebar');
+
+function toggleMobileDrawer() {
+  if (sidebarDrawer) {
+    sidebarDrawer.classList.toggle('mobile-drawer-open');
+  }
+}
+
+if (btnMobileToggle) btnMobileToggle.addEventListener('click', toggleMobileDrawer);
+if (mBtnOverview) {
+  mBtnOverview.addEventListener('click', () => {
+    switchView('studio');
+    toggleMobileDrawer();
+  });
+}
+
+// ═══════════════════════════════════════════════
+// PERPLEXITY PROFILE CHART (Drawer Canvas)
+// ═══════════════════════════════════════════════
+function drawPerplexityChart(sentences) {
   const canvas = document.getElementById('perplexity-chart');
-  const ctx    = canvas.getContext('2d');
-  const W      = canvas.offsetWidth || 800;
-  const H      = 120;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth || 340;
+  const H = 140;
 
-  canvas.width  = W;
+  canvas.width = W;
   canvas.height = H;
 
-  const perps  = sentences.map(s => s.perplexity);
-  const maxP   = Math.max(...perps, 50);
-  const step   = W / (perps.length - 1 || 1);
-  const pad    = 10;
+  const perps = sentences.map(s => s.perplexity);
+  const maxP = Math.max(...perps, 40);
+  const step = W / (perps.length - 1 || 1);
+  const pad = 12;
 
   ctx.clearRect(0, 0, W, H);
 
-  // Grid lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-  ctx.lineWidth   = 1;
+  // Background Grid
+  ctx.strokeStyle = '#f1f5f9';
+  ctx.lineWidth = 1;
   [0.25, 0.5, 0.75].forEach(t => {
     const y = pad + (1 - t) * (H - 2 * pad);
     ctx.beginPath();
@@ -790,14 +941,15 @@ function drawChart(sentences) {
 
   // Gradient fill
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, 'rgba(99,102,241,0.3)');
-  grad.addColorStop(1, 'rgba(99,102,241,0)');
+  grad.addColorStop(0, 'rgba(37, 99, 235, 0.25)');
+  grad.addColorStop(1, 'rgba(37, 99, 235, 0)');
 
   ctx.beginPath();
   perps.forEach((p, i) => {
     const x = i * step;
     const y = pad + (1 - p / maxP) * (H - 2 * pad);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
   });
   ctx.lineTo((perps.length - 1) * step, H);
   ctx.lineTo(0, H);
@@ -805,661 +957,276 @@ function drawChart(sentences) {
   ctx.fillStyle = grad;
   ctx.fill();
 
-  // Line
+  // Line stroke
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(99,102,241,0.8)';
-  ctx.lineWidth   = 2;
-  ctx.lineJoin    = 'round';
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
   perps.forEach((p, i) => {
     const x = i * step;
     const y = pad + (1 - p / maxP) * (H - 2 * pad);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
   });
   ctx.stroke();
 
   // Dots
   perps.forEach((p, i) => {
-    const x   = i * step;
-    const y   = pad + (1 - p / maxP) * (H - 2 * pad);
+    const x = i * step;
+    const y = pad + (1 - p / maxP) * (H - 2 * pad);
     const cls = sentences[i].classification;
-    const color = cls === 'ai_direct' ? '#ef4444' : cls === 'ai_polished' ? '#eab308' : '#22c55e';
+    const color = cls === 'ai_direct' ? '#dc2626' : cls === 'ai_polished' ? '#d97706' : '#059669';
     ctx.beginPath();
     ctx.arc(x, y, 4, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   });
 }
 
 // ═══════════════════════════════════════════════
-// PRINT REPORT (browser print)
+// RENDER PRINT / PDF EXPORT CONTENT
 // ═══════════════════════════════════════════════
-document.getElementById('btn-print').addEventListener('click', () => {
-  window.print();
-});
+function renderPrintReport(r, rawText) {
+  const reportBody = document.getElementById('report-body');
+  if (reportBody) reportBody.classList.remove('hidden');
+
+  const ts = document.getElementById('report-timestamp');
+  if (ts) ts.textContent = new Date().toLocaleString();
+
+  document.querySelectorAll('.ph-score').forEach(el => el.textContent = r.score + '%');
+
+  const tbody = document.getElementById('sentence-tbody');
+  if (tbody) {
+    tbody.innerHTML = r.sentences.map(s => {
+      const clsMap = { human: 'style="color:#059669;font-weight:bold;"', ai_direct: 'style="color:#dc2626;font-weight:bold;"', ai_polished: 'style="color:#d97706;font-weight:bold;"' };
+      const labelMap = { human: 'HUMAN', ai_direct: 'AI-DIRECT', ai_polished: 'AI-POLISHED' };
+      return `
+        <tr>
+          <td style="font-family:monospace; color:#64748b;">${String(s.idx + 1).padStart(2,'0')}</td>
+          <td>${escapeHtml(s.text)}</td>
+          <td style="font-family:monospace;">${s.perplexity.toFixed(1)}</td>
+          <td ${clsMap[s.classification] || ''}>${labelMap[s.classification] || s.classification}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
 
 // ═══════════════════════════════════════════════
-// DOWNLOAD PDF — Full jsPDF Programmatic Report
+// PRINT & PDF REPORT GENERATION (jsPDF)
 // ═══════════════════════════════════════════════
-document.getElementById('btn-download-pdf').addEventListener('click', () => {
-  if (!currentAnalysisResult) return;
+const btnPrint = document.getElementById('btn-print');
+if (btnPrint) {
+  btnPrint.addEventListener('click', () => window.print());
+}
+
+function handleDownloadPDF() {
+  if (!currentAnalysisResult) {
+    alert('Please run an inspection first before downloading the PDF report.');
+    return;
+  }
   generateMurnitinPDF(currentAnalysisResult, currentAnalysisText);
-});
+}
+
+const btnDl1 = document.getElementById('btn-download-pdf');
+const btnDl2 = document.getElementById('btn-hdr-download');
+const btnDl3 = document.getElementById('btn-studio-download');
+const btnDlMobile = document.getElementById('m-btn-export');
+
+if (btnDl1) btnDl1.addEventListener('click', handleDownloadPDF);
+if (btnDl2) btnDl2.addEventListener('click', handleDownloadPDF);
+if (btnDl3) btnDl3.addEventListener('click', handleDownloadPDF);
+if (btnDlMobile) btnDlMobile.addEventListener('click', handleDownloadPDF);
 
 function generateMurnitinPDF(r, rawText) {
   try {
     const { jsPDF } = window.jspdf;
     if (!jsPDF) {
-      throw new Error("jsPDF library is not loaded. Please refresh the page.");
+      throw new Error("jsPDF library is loading. Please refresh the page.");
     }
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
-    const PW = 210; // page width mm
-    const PH = 297; // page height mm
-    const ML = 18;  // margin left
-    const MR = 18;  // margin right
-    const CW = PW - ML - MR; // content width
+    const PW = 210;
+    const PH = 297;
+    const ML = 18;
+    const MR = 18;
+    const CW = PW - ML - MR;
 
-    // ── Color palette ─────────────────────────────
     const C = {
       black:     [0,   0,   0],
       white:     [255, 255, 255],
-      indigo:    [99,  102, 241],
-      indigoD:   [67,  56,  202],
-      green:     [34,  197, 94],
-      yellow:    [234, 179, 8],
-      red:       [239, 68,  68],
+      navy:      [11,  23,  39],
+      navyBar:   [15,  35,  61],
+      blue:      [37,  99,  235],
+      green:     [5,   150, 105],
+      amber:     [217, 119, 6],
+      red:       [220, 38,  38],
       gray100:   [248, 249, 250],
-      gray200:   [233, 236, 239],
-      gray300:   [222, 226, 230],
-      gray400:   [173, 181, 189],
-      gray500:   [134, 142, 150],
-      gray600:   [108, 117, 125],
-      gray700:   [73,  80,  87],
-      gray800:   [52,  58,  64],
-      gray900:   [33,  37,  41],
-      bgDark:    [10,  10,  15],
+      gray200:   [226, 232, 240],
+      gray400:   [148, 163, 184],
+      gray700:   [51,  65,  85],
+      gray900:   [15,  23,  42],
     };
 
-    // ── Helpers ────────────────────────────────────
-    const rgb  = (c) => ({ r: c[0], g: c[1], b: c[2] });
-    const fill = (c) => doc.setFillColor(c[0], c[1], c[2]);
+    const fill   = (c) => doc.setFillColor(c[0], c[1], c[2]);
     const stroke = (c) => doc.setDrawColor(c[0], c[1], c[2]);
-    const text  = (c) => doc.setTextColor(c[0], c[1], c[2]);
-    const font  = (style, size) => { doc.setFont('helvetica', style); doc.setFontSize(size); };
-    const rect  = (x, y, w, h, s='F') => doc.rect(x, y, w, h, s);
-    
+    const text   = (c) => doc.setTextColor(c[0], c[1], c[2]);
+    const font   = (style, size) => { doc.setFont('helvetica', style); doc.setFontSize(size); };
+    const rect   = (x, y, w, h, s='F') => doc.rect(x, y, w, h, s);
+
     function wrapText(str, maxWidth) {
       return doc.splitTextToSize(str, maxWidth);
     }
 
-    function scoreColor(score) {
-      if (score < 25)  return C.green;
-      if (score < 65)  return C.yellow;
-      return C.red;
-    }
-
-    function clsColor(cls) {
-      if (cls === 'ai_direct')   return C.red;
-      if (cls === 'ai_polished') return C.yellow;
-      return C.green;
-    }
-
-    function clsLabel(cls) {
-      if (cls === 'ai_direct')   return 'AI-DIRECT';
-      if (cls === 'ai_polished') return 'AI-POLISHED';
-      return 'HUMAN';
+    function drawPageHeader(title) {
+      fill(C.navyBar); rect(0, 0, PW, 14);
+      fill(C.red);     rect(0, 13, PW, 1.2);
+      font('bold', 8); text(C.white);
+      doc.text('MURNITIN FEEDBACK STUDIO', ML, 9);
+      font('normal', 7); text(C.gray400);
+      doc.text(title, ML + 55, 9);
+      font('bold', 7); text(C.white);
+      doc.text(`#${activeSubmissionId}`, PW - MR, 9, { align: 'right' });
     }
 
     function drawPageFooter(pageNum, totalPages) {
       const y = PH - 8;
       fill(C.gray200); rect(0, PH - 12, PW, 12);
-      font('normal', 7);
-      text(C.gray600);
-      doc.text('Murnitin AI & Plagiarism Inspector  ·  Developed by Md. Mehedi Hasan  ·  mdmehedihasan.us', ML, y);
+      font('normal', 7); text(C.gray700);
+      doc.text('Murnitin Feedback Studio  ·  Developed by Md. Mehedi Hasan  ·  mdmehedihasan.us', ML, y);
       doc.text(`Page ${pageNum} of ${totalPages}`, PW - MR, y, { align: 'right' });
-      // Indigo rule
-      fill(C.indigo); rect(0, PH - 12, PW, 1.2);
+      fill(C.red); rect(0, PH - 12, PW, 1);
     }
 
-    function drawPageHeader(title) {
-      fill(C.gray900); rect(0, 0, PW, 14);
-      fill(C.indigo);  rect(0, 13, PW, 1.2);
-      font('bold', 8); text(C.white);
-      doc.text('MURNITIN', ML, 9);
-      font('normal', 7); text(C.gray400);
-      doc.text(title, ML + 22, 9);
-      font('bold', 7); text(C.indigo);
-      doc.text(`#${activeSubmissionId}`, PW - MR, 9, { align: 'right' });
-    }
+    // ── PAGE 1: COVER DIGITAL RECEIPT ──
+    fill(C.navy); rect(0, 0, PW, PH);
+    fill(C.red);  rect(0, 0, PW, 4);
 
-    // ─────────────────────────────────────────────
-    // PAGE 1 — COVER PAGE
-    // ─────────────────────────────────────────────
-    // Full dark background
-    fill(C.bgDark); rect(0, 0, PW, PH);
+    font('bold', 24); text(C.white);
+    doc.text('Murnitin Feedback Studio', ML, 42);
+    font('normal', 11); text(C.gray400);
+    doc.text('Explainable Academic Integrity & AI Verification', ML, 50);
 
-    // Top accent bar
-    fill(C.indigo); rect(0, 0, PW, 3);
+    fill(C.gray700); rect(ML, 55, CW, 0.5);
 
-    // Logo + name
-    font('bold', 26); text(C.white);
-    doc.text('Murnitin', ML, 42);
-    font('normal', 11); text(C.indigo);
-    doc.text('AI & Plagiarism Inspector', ML, 52);
-
-    // Divider
-    fill(C.gray700); rect(ML, 57, CW, 0.4);
-
-    // Submission receipt box
+    // Receipt Card Box
     const boxY = 64;
-    const boxH = 70;
-    fill([20, 20, 30]); rect(ML, boxY, CW, boxH, 'F');
+    const boxH = 75;
+    fill([18, 30, 49]); rect(ML, boxY, CW, boxH, 'F');
     stroke(C.gray700); rect(ML, boxY, CW, boxH, 'S');
-
-    // Indigo left accent strip
-    fill(C.indigo); rect(ML, boxY, 2.5, boxH);
+    fill(C.red); rect(ML, boxY, 3, boxH, 'F');
 
     const submissionDate = new Date().toLocaleString();
     const wordCountVal   = rawText.split(/\s+/).filter(x => x.length > 0).length;
     const charCountVal   = rawText.length;
-    const hashVal = 'mn256_' + Math.random().toString(16).substr(2, 16);
+    const hashVal        = 'mn256_' + Math.random().toString(16).substr(2, 16);
 
     const receiptLines = [
       ['Submission ID',    activeSubmissionId],
       ['Document Title',   activeSubmissionTitle || 'Untitled Document'],
       ['Submission Date',  submissionDate],
-      ['Word Count',       wordCountVal.toLocaleString()],
-      ['Character Count',  charCountVal.toLocaleString()],
+      ['Word Count',       wordCountVal.toLocaleString() + ' words'],
+      ['Character Count',  charCountVal.toLocaleString() + ' chars'],
       ['Integrity Hash',   hashVal],
     ];
 
-    font('bold', 9); text(C.gray400);
-    doc.text('SUBMISSION RECEIPT', ML + 6, boxY + 8);
+    font('bold', 9); text(C.white);
+    doc.text('OFFICIAL DIGITAL SUBMISSION RECEIPT', ML + 8, boxY + 9);
 
     receiptLines.forEach(([label, val], i) => {
-      const rowY = boxY + 16 + i * 9;
+      const rowY = boxY + 18 + i * 9;
       font('normal', 7.5); text(C.gray400);
-      doc.text(label, ML + 6, rowY);
+      doc.text(label, ML + 8, rowY);
       font('bold', 7.5); text(C.white);
-      doc.text(String(val).substring(0, 58), ML + 50, rowY);
-      // light row separator
-      fill([30, 30, 45]); rect(ML + 4, rowY + 2, CW - 8, 0.3);
+      doc.text(String(val).substring(0, 56), ML + 55, rowY);
+      fill([28, 45, 70]); rect(ML + 6, rowY + 2, CW - 12, 0.3);
     });
 
-    // ── Big Score Badge ───────────────────────────
-    const badgeY = boxY + boxH + 14;
-    const sColor = scoreColor(r.score);
-    
-    // Outer ring
+    // Score Circle & Verdict
+    const badgeY = boxY + boxH + 15;
+    const sColor = r.score < 25 ? C.green : r.score < 80 ? C.amber : C.red;
+
     stroke(sColor); doc.setDrawColor(sColor[0], sColor[1], sColor[2]);
     doc.setLineWidth(2.5);
     doc.circle(ML + 30, badgeY + 22, 22, 'S');
     doc.setLineWidth(0.3);
 
-    // Score text inside circle
-    font('bold', 26); text(sColor);
-    doc.text(r.score + '%', ML + 30, badgeY + 19, { align: 'center' });
+    font('bold', 24); text(sColor);
+    doc.text(r.score + '%', ML + 30, badgeY + 20, { align: 'center' });
     font('normal', 7); text(C.gray400);
     doc.text('AI Likelihood', ML + 30, badgeY + 26, { align: 'center' });
 
-    // Verdict box to the right of circle
     const verdictBoxX = ML + 60;
-    fill([20, 20, 30]); rect(verdictBoxX, badgeY + 4, CW - 62, 36, 'F');
+    fill([18, 30, 49]); rect(verdictBoxX, badgeY + 4, CW - 62, 36, 'F');
     stroke(sColor); rect(verdictBoxX, badgeY + 4, CW - 62, 36, 'S');
-    fill(sColor); rect(verdictBoxX, badgeY + 4, 2.5, 36);
+    fill(sColor); rect(verdictBoxX, badgeY + 4, 3, 36, 'F');
 
-    font('bold', 16); text(sColor);
-    doc.text(r.verdict, verdictBoxX + 8, badgeY + 18);
+    font('bold', 15); text(sColor);
+    doc.text(r.verdict, verdictBoxX + 8, badgeY + 17);
 
-    const verdictDescs = {
-      'Likely Human':         'Linguistic perplexity and burstiness conform to natural human writing patterns.',
-      'Inconclusive / Mixed': 'Mixed semantic markers suggest collaborative human-AI structuring or heavy revision.',
-      'Likely AI-Assisted':   'Structural uniformity and low perplexity variance indicate significant AI assistance.',
-      'Likely AI-Generated':  'High-density AI signatures — uniform entropy, low burstiness, boilerplate transitions.',
-      'Evasion Detected':     'Adversarial bypass markers detected — homoglyphs or invisible Unicode characters present.'
-    };
-    const vDesc = verdictDescs[r.verdict] || '';
     font('normal', 7.5); text(C.gray400);
-    const vWrapped = wrapText(vDesc, CW - 72);
-    doc.text(vWrapped, verdictBoxX + 8, badgeY + 26);
+    const vDesc = r.score >= 80
+      ? 'High-density AI signatures detected across syntax and lexical entropy.'
+      : r.score >= 25
+      ? 'Mixed signals indicating collaborative authoring, paraphrasing, or revision.'
+      : 'Natural burstiness and lexical distribution conforming to human prose.';
+    doc.text(wrapText(vDesc, CW - 75), verdictBoxX + 8, badgeY + 25);
 
-    // ── 4-metric summary row ───────────────────────
-    const metrY = badgeY + boxH - 4;
-    const metrics4 = [
-      { label: 'Avg Perplexity',  val: r.avg.toFixed(1) },
-      { label: 'Burstiness',      val: r.burstiness.toFixed(1) },
-      { label: 'AI Sentences',    val: `${r.aiSentences} / ${r.sentences.length}` },
-      { label: 'Evasion',         val: r.hasEvasion ? 'DETECTED' : 'NONE' },
-    ];
-    const mW = CW / 4;
-    metrics4.forEach((m, i) => {
-      const mX = ML + i * mW;
-      fill(i % 2 === 0 ? [16, 16, 24] : [20, 20, 32]);
-      rect(mX, metrY, mW, 22);
-      font('bold', 12);
-      text(i === 3 && r.hasEvasion ? C.red : C.indigo);
-      doc.text(String(m.val), mX + mW / 2, metrY + 11, { align: 'center' });
-      font('normal', 6.5); text(C.gray400);
-      doc.text(m.label.toUpperCase(), mX + mW / 2, metrY + 18, { align: 'center' });
-    });
-
-    // Advisory disclaimer
-    const disclaimerY = metrY + 28;
-    fill([18, 18, 28]); rect(ML, disclaimerY, CW, 20);
-    stroke(C.gray700); rect(ML, disclaimerY, CW, 20, 'S');
-    font('bold', 7); text(C.yellow);
-    doc.text('ADVISORY NOTICE', ML + 4, disclaimerY + 6);
-    font('normal', 6.5); text(C.gray400);
-    const disclaimer = 'This report is generated using statistical linguistic analysis and is intended as a decision-support tool only. Results should not be used as sole grounds for disciplinary action. All processing is performed client-side; no text data is transmitted or stored.';
-    const dLines = wrapText(disclaimer, CW - 8);
-    doc.text(dLines, ML + 4, disclaimerY + 13);
-
-    // Cover footer
-    font('normal', 7); text(C.gray600);
+    // Cover Footer
+    font('normal', 7); text(C.gray400);
     doc.text('Developed by Md. Mehedi Hasan  ·  mdmehedihasan.us  ·  Zero-Knowledge Client-Side Analysis', PW / 2, PH - 10, { align: 'center' });
-    fill(C.indigo); rect(0, PH - 3, PW, 3);
+    fill(C.red); rect(0, PH - 3, PW, 3);
 
-    // ─────────────────────────────────────────────
-    // PAGE 2 — SENTENCE HIGHLIGHT MAP
-    // ─────────────────────────────────────────────
+    // ── PAGE 2: SENTENCE-BY-SENTENCE BREAKDOWN ──
     doc.addPage();
     fill(C.white); rect(0, 0, PW, PH);
-    drawPageHeader('Linguistic Highlight Map');
+    drawPageHeader('Sentence-by-Sentence Integrity Analysis');
 
-    let y = 20;
-
-    // Section title
-    font('bold', 14); text(C.gray900);
-    doc.text('Sentence-Level Highlight Map', ML, y);
-    y += 5;
-    font('normal', 8); text(C.gray600);
-    doc.text('Each sentence is classified using pseudo-perplexity scoring. Color indicates AI likelihood.', ML, y);
-    y += 4;
-
-    // Legend
-    const legend = [['Human', C.green], ['AI-Polished', C.yellow], ['AI-Direct', C.red]];
-    legend.forEach(([lbl, lc], i) => {
-      const lx = ML + i * 42;
-      fill(lc); rect(lx, y, 3, 3, 'F');
-      font('normal', 7); text(C.gray700);
-      doc.text(lbl, lx + 5, y + 3);
-    });
-    y += 9;
-
-    // Horizontal rule
-    fill(C.gray200); rect(ML, y, CW, 0.5);
-    y += 5;
-
-    // Render sentences as flowing colored blocks
-    const lineH = 6.5;
-    const padding = 3;
-    
-    r.sentences.forEach((s, idx) => {
-      const cls = s.classification;
-      const color = clsColor(cls);
-      const label = clsLabel(cls);
-      
-      // Sentence text wrapped
-      font('normal', 7.5);
-      const lines = wrapText(`[${String(idx + 1).padStart(2, '0')}] ${s.text}`, CW - 24);
-      const blockH = lines.length * lineH + padding * 2;
-
-      // Check page overflow
-      if (y + blockH > PH - 18) {
-        drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '—');
-        doc.addPage();
-        fill(C.white); rect(0, 0, PW, PH);
-        drawPageHeader('Linguistic Highlight Map (cont.)');
-        y = 20;
-      }
-
-      // Left color bar
-      fill(color); rect(ML, y, 2, blockH, 'F');
-
-      // Background tint
-      const bgTint = cls === 'ai_direct' ? [255,245,245] : cls === 'ai_polished' ? [255,253,235] : [240,253,244];
-      fill(bgTint); rect(ML + 2, y, CW - 22, blockH, 'F');
-
-      // Sentence text
-      text(C.gray800);
-      doc.text(lines, ML + 5, y + padding + lineH * 0.7);
-
-      // Label badge on the right
-      const labelBgColor = cls === 'ai_direct' ? [254,202,202] : cls === 'ai_polished' ? [254,243,199] : [187,247,208];
-      fill(labelBgColor); rect(ML + CW - 21, y + (blockH / 2) - 4, 21, 8, 'F');
-      font('bold', 5.5); text(color);
-      doc.text(label, ML + CW - 10.5, y + (blockH / 2) + 1, { align: 'center' });
-
-      // Perplexity value
-      font('normal', 5.5); text(C.gray400);
-      doc.text(`PPX: ${s.perplexity.toFixed(1)}`, ML + CW - 21, y + blockH - 2);
-
-      y += blockH + 2;
-    });
-
-    drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '—');
-
-    // ─────────────────────────────────────────────
-    // PAGE 3 — PERPLEXITY CHART + SENTENCE TABLE
-    // ─────────────────────────────────────────────
-    doc.addPage();
-    fill(C.white); rect(0, 0, PW, PH);
-    drawPageHeader('Perplexity Profile & Sentence Breakdown');
-
-    y = 22;
-
-    // — Perplexity Profile Chart —
+    let y = 22;
     font('bold', 13); text(C.gray900);
-    doc.text('Perplexity Profile (Per Sentence)', ML, y);
-    y += 4;
-    font('normal', 7.5); text(C.gray600);
-    doc.text('Low, flat lines = AI uniformity. High variance = human writing.', ML, y);
-    y += 6;
-
-    // Draw chart background
-    const chartH = 44;
-    fill(C.gray100); rect(ML, y, CW, chartH);
-    stroke(C.gray200); rect(ML, y, CW, chartH, 'S');
-
-    // Draw perplexity line chart
-    const perps = r.sentences.map(s => s.perplexity);
-    const maxP  = Math.max(...perps, 50);
-    const n     = perps.length;
-
-    if (n > 1) {
-      // Grid lines
-      stroke(C.gray200); doc.setLineWidth(0.2);
-      [0.25, 0.5, 0.75].forEach(t => {
-        const gy = y + chartH - t * chartH;
-        doc.line(ML, gy, ML + CW, gy);
-      });
-
-      // Gradient fill simulation (stacked thin rects)
-      for (let i = 0; i < n - 1; i++) {
-        const x1 = ML + (i / (n - 1)) * CW;
-        const x2 = ML + ((i + 1) / (n - 1)) * CW;
-        const y1 = y + chartH - (perps[i] / maxP) * chartH;
-        const y2 = y + chartH - (perps[i + 1] / maxP) * chartH;
-        // Draw filled polygon (trapezoid)
-        fill([220, 221, 253]);
-        doc.triangle(x1, y1, x2, y2, x2, y + chartH, 'F');
-        doc.triangle(x1, y1, x2, y + chartH, x1, y + chartH, 'F');
-      }
-
-      // Main line
-      stroke(C.indigo); doc.setDrawColor(C.indigo[0], C.indigo[1], C.indigo[2]); doc.setLineWidth(0.8);
-      for (let i = 0; i < n - 1; i++) {
-        const x1 = ML + (i / (n - 1)) * CW;
-        const x2 = ML + ((i + 1) / (n - 1)) * CW;
-        const y1 = y + chartH - (perps[i] / maxP) * chartH;
-        const y2 = y + chartH - (perps[i + 1] / maxP) * chartH;
-        doc.line(x1, y1, x2, y2);
-      }
-
-      // Dots
-      doc.setLineWidth(0.2);
-      perps.forEach((p, i) => {
-        const px = ML + (i / (n - 1)) * CW;
-        const py = y + chartH - (p / maxP) * chartH;
-        const dotColor = clsColor(r.sentences[i].classification);
-        fill(dotColor);
-        stroke(C.white);
-        doc.circle(px, py, 1.2, 'FD');
-      });
-
-      // Y-axis labels
-      font('normal', 5.5); text(C.gray400);
-      doc.text(maxP.toFixed(0), ML - 1, y + 3, { align: 'right' });
-      doc.text((maxP * 0.5).toFixed(0), ML - 1, y + chartH / 2 + 1, { align: 'right' });
-      doc.text('0', ML - 1, y + chartH, { align: 'right' });
-    }
-
-    y += chartH + 10;
-
-    // Horizontal rule
-    fill(C.gray200); rect(ML, y, CW, 0.5);
-    y += 8;
-
-    // — Sentence Breakdown Table —
-    font('bold', 13); text(C.gray900);
-    doc.text('Sentence-Level Breakdown', ML, y);
-    y += 4;
-    font('normal', 7.5); text(C.gray600);
-    doc.text('Full per-sentence diagnostics with perplexity score and AI classification.', ML, y);
-    y += 6;
+    doc.text('Sentence Integrity Breakdown', ML, y); y += 4;
+    font('normal', 7.5); text(C.gray700);
+    doc.text('Sentence-level perplexity scores and classification labels.', ML, y); y += 6;
 
     const tableRows = r.sentences.map(s => [
       String(s.idx + 1).padStart(2, '0'),
-      s.text.length > 110 ? s.text.substring(0, 107) + '…' : s.text,
+      s.text.length > 105 ? s.text.substring(0, 102) + '…' : s.text,
       s.perplexity.toFixed(1),
-      clsLabel(s.classification)
+      s.classification === 'ai_direct' ? 'AI-DIRECT' : s.classification === 'ai_polished' ? 'AI-POLISHED' : 'HUMAN'
     ]);
 
-    const clsStyleMap = {
-      'AI-DIRECT':   { textColor: [185, 28, 28],  fillColor: [254, 242, 242] },
-      'AI-POLISHED': { textColor: [161, 98, 7],   fillColor: [254, 252, 232] },
-      'HUMAN':       { textColor: [21, 128, 61],  fillColor: [240, 253, 244] },
-    };
-
-    if (typeof doc.autoTable !== 'function') {
-      throw new Error("jsPDF autoTable plugin not loaded. Please wait a moment and try again.");
-    }
-
-    doc.autoTable({
-      startY: y,
-      head: [['#', 'Sentence', 'Perplexity', 'Classification']],
-      body: tableRows,
-      margin: { left: ML, right: MR },
-      tableWidth: CW,
-      styles: {
-        font: 'helvetica',
-        fontSize: 7,
-        cellPadding: 2.5,
-        lineColor: C.gray200,
-        lineWidth: 0.3,
-      },
-      headStyles: {
-        fillColor: C.gray900,
-        textColor: C.white,
-        fontStyle: 'bold',
-        fontSize: 7.5,
-      },
-      columnStyles: {
-        0: { cellWidth: 8,  halign: 'center', fontStyle: 'bold', textColor: C.gray600 },
-        1: { cellWidth: 110 },
-        2: { cellWidth: 20,  halign: 'center' },
-        3: { cellWidth: 32,  halign: 'center', fontStyle: 'bold' },
-      },
-      alternateRowStyles: { fillColor: C.gray100 },
-      didParseCell: (data) => {
-        if (data.column.index === 3 && data.section === 'body') {
-          const cls = data.cell.raw;
-          const style = clsStyleMap[cls];
-          if (style) {
-            data.cell.styles.textColor = style.textColor;
-            data.cell.styles.fillColor = style.fillColor;
-          }
+    if (typeof doc.autoTable === 'function') {
+      doc.autoTable({
+        startY: y,
+        head: [['#', 'Sentence Passage', 'Perplexity', 'Classification']],
+        body: tableRows,
+        margin: { left: ML, right: MR },
+        tableWidth: CW,
+        styles: { font: 'helvetica', fontSize: 7, cellPadding: 2.5 },
+        headStyles: { fillColor: C.navyBar, textColor: C.white, fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 8, halign: 'center', fontStyle: 'bold' },
+          1: { cellWidth: 110 },
+          2: { cellWidth: 20, halign: 'center' },
+          3: { cellWidth: 32, halign: 'center', fontStyle: 'bold' },
+        },
+        alternateRowStyles: { fillColor: C.gray100 },
+        didDrawPage: () => {
+          drawPageHeader('Sentence-by-Sentence Integrity Analysis');
+          drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '2');
         }
-      },
-      didDrawPage: (data) => {
-        fill(C.white); rect(0, 0, PW, 16); // clear header area on new pages
-        drawPageHeader('Perplexity Profile & Sentence Breakdown');
-        drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '—');
-      }
-    });
-
-    // ─────────────────────────────────────────────
-    // FINAL PAGE — EVASION + COMPLIANCE + SUMMARY
-    // ─────────────────────────────────────────────
-    doc.addPage();
-    fill(C.white); rect(0, 0, PW, PH);
-    drawPageHeader('Evasion Forensics & Compliance Audit');
-
-    y = 22;
-
-    // — Evasion Forensics Section —
-    font('bold', 13); text(C.gray900);
-    doc.text('Adversarial Bypass Forensics', ML, y); y += 4;
-    font('normal', 7.5); text(C.gray600);
-    doc.text('Scanning for invisible Unicode characters and Cyrillic homoglyph substitutions.', ML, y); y += 7;
-
-    if (r.hasEvasion) {
-      // Warning banner
-      fill([255, 243, 205]); rect(ML, y, CW, 10, 'F');
-      stroke(C.yellow); rect(ML, y, CW, 10, 'S');
-      fill(C.yellow); rect(ML, y, 3, 10, 'F');
-      font('bold', 8.5); text([161, 98, 7]);
-      doc.text('⚠  EVASION MARKERS DETECTED', ML + 7, y + 6.5);
-      y += 15;
-
-      if (r.hiddenChars.length > 0) {
-        font('bold', 8); text(C.gray800);
-        doc.text('Hidden Unicode Characters:', ML, y); y += 4;
-        r.hiddenChars.forEach(h => {
-          fill(C.gray100); rect(ML, y, CW, 8, 'F');
-          fill(C.red); rect(ML, y, 2, 8, 'F');
-          font('bold', 7.5); text(C.red);
-          doc.text(`${h.count}×  ${h.name}`, ML + 5, y + 5.5);
-          font('normal', 7); text(C.gray600);
-          doc.text('Invisible character found — may be used to fragment words and evade token-level detectors.', ML + 45, y + 5.5);
-          y += 11;
-        });
-      }
-
-      if (r.homoglyphs.length > 0) {
-        y += 3;
-        font('bold', 8); text(C.gray800);
-        doc.text('Homoglyph Substitutions (Cyrillic/Latin Mixing):', ML, y); y += 4;
-        fill(C.gray100); rect(ML, y, CW, 10, 'F');
-        fill(C.red); rect(ML, y, 2, 10, 'F');
-        font('bold', 7.5); text(C.red);
-        doc.text(`${r.homoglyphs.length} word(s) flagged`, ML + 5, y + 4);
-        font('normal', 7); text(C.gray600);
-        const hWords = r.homoglyphs.slice(0, 8).join(', ') + (r.homoglyphs.length > 8 ? ', …' : '');
-        doc.text('Words: ' + hWords, ML + 5, y + 8.5);
-        y += 14;
-      }
-    } else {
-      // Clean banner
-      fill([240, 253, 244]); rect(ML, y, CW, 12, 'F');
-      stroke(C.green); rect(ML, y, CW, 12, 'S');
-      fill(C.green); rect(ML, y, 3, 12, 'F');
-      font('bold', 8.5); text([21, 128, 61]);
-      doc.text('✓  No adversarial bypass markers detected in this document.', ML + 7, y + 8);
-      y += 17;
+      });
     }
 
-    y += 4;
-    fill(C.gray200); rect(ML, y, CW, 0.5);
-    y += 10;
+    drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '2');
 
-    // — Statistical Summary —
-    font('bold', 13); text(C.gray900);
-    doc.text('Statistical Analysis Summary', ML, y); y += 7;
-
-    const statsData = [
-      ['Total Sentences Analyzed',         r.sentences.length],
-      ['Human Sentences',                   r.sentences.filter(s => s.classification === 'human').length],
-      ['AI-Polished Sentences',             r.aiPolishedCount],
-      ['AI-Direct Sentences',              r.aiDirectCount],
-      ['AI-Flagged Ratio',                  r.aiFlaggedPct + '%'],
-      ['Average Pseudo-Perplexity',         r.avg.toFixed(2)],
-      ['Perplexity Std Dev (Burstiness)',   r.burstiness.toFixed(2)],
-      ['Evasion Detected',                  r.hasEvasion ? 'YES — Bypass Markers Found' : 'NO — Document Clean'],
-      ['Overall AI Likelihood Score',       r.score + '%'],
-      ['Final Verdict',                     r.verdict],
-    ];
-
-    doc.autoTable({
-      startY: y,
-      body: statsData,
-      margin: { left: ML, right: MR },
-      tableWidth: CW,
-      styles: {
-        font: 'helvetica',
-        fontSize: 8,
-        cellPadding: 3,
-        lineColor: C.gray200,
-        lineWidth: 0.3,
-      },
-      columnStyles: {
-        0: { cellWidth: 90, fontStyle: 'bold', textColor: C.gray700, fillColor: C.gray100 },
-        1: { cellWidth: CW - 90, textColor: C.gray900 },
-      },
-      alternateRowStyles: { fillColor: C.white },
-      didDrawPage: () => {
-        drawPageHeader('Evasion Forensics & Compliance Audit');
-      }
-    });
-
-    y = doc.lastAutoTable.finalY + 10;
-
-    // — Compliance Audit —
-    if (y > PH - 80) {
-      doc.addPage();
-      fill(C.white); rect(0, 0, PW, PH);
-      drawPageHeader('Compliance Audit');
-      y = 22;
-    }
-
-    font('bold', 13); text(C.gray900);
-    doc.text('Privacy & Compliance Audit', ML, y); y += 5;
-
-    const compliance = [
-      { status: 'PASS', label: 'Zero-Knowledge Processing',  detail: 'No raw text stored or transmitted. All processing is fully client-side in the browser.' },
-      { status: 'PASS', label: 'GDPR — Data Minimisation',   detail: 'Only statistical derivatives (perplexity scores) are retained in memory, never personal data.' },
-      { status: 'PASS', label: 'FERPA — Education Records',  detail: 'No student identification data is processed or stored at any point.' },
-      { status: 'PASS', label: 'Decision-Support Only',       detail: 'Report is advisory. Not intended as automated grounds for disciplinary or academic action.' },
-      { status: 'PASS', label: 'No Third-Party Data Sharing', detail: 'Document content is never transmitted to any external service, API, or database.' },
-    ];
-
-    compliance.forEach(item => {
-      const rowH = 16;
-      fill([240, 253, 244]); rect(ML, y, CW, rowH, 'F');
-      stroke(C.green); rect(ML, y, CW, rowH, 'S');
-      fill(C.green); rect(ML, y, 3, rowH, 'F');
-
-      font('bold', 7.5); text([21, 128, 61]);
-      doc.text('✓  PASS', ML + 5, y + 5.5);
-      font('bold', 8); text(C.gray800);
-      doc.text(item.label, ML + 22, y + 5.5);
-      font('normal', 7); text(C.gray500);
-      doc.text(item.detail, ML + 5, y + 11.5);
-
-      y += rowH + 2;
-    });
-
-    y += 6;
-
-    // — Final disclaimer box —
-    if (y > PH - 30) {
-      doc.addPage();
-      fill(C.white); rect(0, 0, PW, PH);
-      drawPageHeader('Final Notes');
-      y = 22;
-    }
-
-    fill(C.gray100); rect(ML, y, CW, 28, 'F');
-    stroke(C.gray300); rect(ML, y, CW, 28, 'S');
-    fill(C.indigo); rect(ML, y, 3, 28, 'F');
-    font('bold', 8); text(C.gray800);
-    doc.text('Methodology & Limitations', ML + 6, y + 7);
-    font('normal', 7); text(C.gray600);
-    const methodology = 'Murnitin uses statistical pseudo-perplexity scoring based on word frequency distributions and AI-specific linguistic signatures. It does not perform internet-based similarity comparison. Perplexity alone is not deterministic; human text containing technical jargon may score higher. Always review flagged sentences manually. This report was generated by Murnitin v1.1 — a zero-knowledge, client-side academic integrity tool.';
-    const mLines = wrapText(methodology, CW - 12);
-    doc.text(mLines, ML + 6, y + 14);
-
-    // Final footer on last page
-    drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '—');
-
-    // ─────────────────────────────────────────────
-    // Save PDF
-    // ─────────────────────────────────────────────
-    const filename = `Murnitin_Report_${activeSubmissionId || 'MN-Report'}_${new Date().toISOString().slice(0,10)}.pdf`;
+    const filename = `Murnitin_Integrity_Report_${activeSubmissionId}_${new Date().toISOString().slice(0,10)}.pdf`;
     doc.save(filename);
   } catch (err) {
     alert("Error generating PDF: " + err.message);
     console.error(err);
   }
 }
-
