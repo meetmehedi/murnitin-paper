@@ -1028,7 +1028,29 @@ function handleDownloadPDF() {
     alert('Please run an inspection first before downloading the PDF report.');
     return;
   }
-  generateMurnitinPDF(currentAnalysisResult, currentAnalysisText);
+
+  // Show loading state on all download buttons
+  const allBtns = [
+    document.getElementById('btn-download-pdf'),
+    document.getElementById('btn-hdr-download'),
+    document.getElementById('btn-studio-download'),
+    document.getElementById('m-btn-export'),
+  ].filter(Boolean);
+
+  const origLabels = allBtns.map(b => b.textContent);
+  allBtns.forEach(b => { b.disabled = true; b.textContent = '⏳ Generating PDF…'; });
+
+  // Small delay so the UI updates before the synchronous PDF generation locks the thread
+  setTimeout(() => {
+    try {
+      generateMurnitinPDF(currentAnalysisResult, currentAnalysisText);
+    } catch(e) {
+      alert('PDF generation failed: ' + e.message);
+      console.error(e);
+    } finally {
+      allBtns.forEach((b, i) => { b.disabled = false; b.textContent = origLabels[i]; });
+    }
+  }, 50);
 }
 
 const btnDl1 = document.getElementById('btn-download-pdf');
@@ -1043,11 +1065,19 @@ if (btnDlMobile) btnDlMobile.addEventListener('click', handleDownloadPDF);
 
 function generateMurnitinPDF(r, rawText) {
   try {
-    const { jsPDF } = window.jspdf;
-    if (!jsPDF) {
-      throw new Error("jsPDF library is loading. Please refresh the page.");
+    // jsPDF UMD bundle exposes window.jspdf.jsPDF; some CDNs use window.jsPDF directly
+    const jsPDFClass = (window.jspdf && window.jspdf.jsPDF)
+      || window.jsPDF
+      || null;
+
+    if (!jsPDFClass) {
+      alert(
+        'PDF library (jsPDF) failed to load.\n\n' +
+        'Please check your internet connection, then refresh the page and try again.'
+      );
+      return;
     }
-    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const doc = new jsPDFClass({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
     const PW = 210;
     const PH = 297;
