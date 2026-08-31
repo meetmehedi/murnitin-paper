@@ -752,37 +752,52 @@ if (btnInspect) {
     const origText = btnLabel.textContent;
     btnLabel.textContent = '🔬 Running Murnitin Inspection…';
 
-    try {
-      // ── Try ML server first ──
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
+    const isStaticHost = typeof window !== 'undefined' && (
+      window.location.hostname.includes('github.io') ||
+      window.location.hostname.includes('vercel.app') ||
+      window.location.protocol === 'file:'
+    );
 
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      if (!response.ok) throw new Error(`Server error ${response.status}`);
-      const result = await response.json();
-      if (result.error) throw new Error(result.error);
-
-      if (!result.verdictClass) {
-        result.verdictClass = result.score < 25 ? 'green' : result.score < 80 ? 'amber' : 'red';
-      }
-
-      setEngineIndicator('ml');
-      applyReceiptAndModal(result, text, origin);
-
-    } catch (err) {
-      console.warn('Using client-side statistical engine:', err.message);
+    if (isStaticHost) {
+      // ── Instant Client-Side Statistical Engine on Static Hosts (GitHub Pages) ──
       setEngineIndicator('heuristic');
-
       const result = analyzeText(text);
       if (result) {
         applyReceiptAndModal(result, text, origin);
+      }
+    } else {
+      try {
+        // ── Try Local/Cloud ML server if available ──
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) throw new Error(`Server error ${response.status}`);
+        const result = await response.json();
+        if (result.error) throw new Error(result.error);
+
+        if (!result.verdictClass) {
+          result.verdictClass = result.score < 25 ? 'green' : result.score < 80 ? 'amber' : 'red';
+        }
+
+        setEngineIndicator('ml');
+        applyReceiptAndModal(result, text, origin);
+
+      } catch (err) {
+        console.warn('Backend unavailable, using client-side statistical engine:', err.message);
+        setEngineIndicator('heuristic');
+
+        const result = analyzeText(text);
+        if (result) {
+          applyReceiptAndModal(result, text, origin);
+        }
       }
     }
 
