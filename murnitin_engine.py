@@ -332,6 +332,10 @@ def analyze_document(text, source_label="Input"):
     elif overall_score < 82: verdict = 'Likely AI-Assisted'
     else:                   verdict = 'Likely AI-Generated'
 
+    ai_direct_count = sum(1 for r in sent_results if r['classification'] == 'ai_direct')
+    ai_polished_count = sum(1 for r in sent_results if r['classification'] == 'ai_polished')
+    ai_flagged_count = ai_direct_count + ai_polished_count
+
     return {
         'source': source_label,
         'summary': {
@@ -340,9 +344,9 @@ def analyze_document(text, source_label="Input"):
             'avg_perplexity': round(avg, 2),
             'burstiness': round(burstiness, 2),
             'total_sentences': len(sent_results),
-            'ai_direct_count': len(ai_direct),
-            'ai_polished_count': len(ai_polish),
-            'ai_flagged_pct': round(100 * len(ai_total) / len(sent_results), 1),
+            'ai_direct_count': ai_direct_count,
+            'ai_polished_count': ai_polished_count,
+            'ai_flagged_pct': round(100 * ai_flagged_count / len(sent_results), 1),
             'evasion_detected': has_evasion,
         },
         'evasion_report': {
