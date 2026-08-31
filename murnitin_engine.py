@@ -138,12 +138,22 @@ def clean_pdf_text(text):
 
 
 def split_sentences(text):
-    raw = re.split(r'(?<=[.!?])\s+(?=[A-Z"\'(])|(?<=[.!?])\s*\n', text)
+    protected = text
+    abbrevs = [
+        "Md.", "Dr.", "Prof.", "Mr.", "Mrs.", "Ms.", "et al.", "e.g.", "i.e.",
+        "Fig.", "Figs.", "Table.", "vs.", "al.", "Jan.", "Feb.", "Mar.", "Apr.",
+        "Aug.", "Sept.", "Oct.", "Nov.", "Dec.", "Dept.", "Univ.", "Inc.", "Corp.", "Ltd."
+    ]
+    for abb in abbrevs:
+        placeholder = abb.replace(".", "___DOT___")
+        protected = protected.replace(abb, placeholder)
+
+    raw = re.split(r'(?<=[.!?])\s+(?=[A-Z"\'(])|(?<=[.!?])\s*\n', protected)
     sents = []
     for s in raw:
-        s = s.strip()
-        if len(s.split()) >= 4:
-            sents.append(s)
+        cleaned_s = s.replace("___DOT___", ".").strip()
+        if len(cleaned_s.split()) >= 4:
+            sents.append(cleaned_s)
     return sents
 
 

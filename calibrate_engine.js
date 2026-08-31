@@ -271,9 +271,21 @@ function analyzeTextAdvanced(rawText) {
   ['\u200b','\u200c','\u200d','\ufeff','\u00ad'].forEach(c => { clean = clean.split(c).join(''); });
   clean = cleanPDFText(clean);
 
-  const rawSents = clean
+  let protectedText = clean;
+  const abbrevs = [
+    "Md.", "Dr.", "Prof.", "Mr.", "Mrs.", "Ms.", "et al.", "e.g.", "i.e.",
+    "Fig.", "Figs.", "Table.", "vs.", "al.", "Jan.", "Feb.", "Mar.", "Apr.",
+    "Aug.", "Sept.", "Oct.", "Nov.", "Dec.", "Dept.", "Univ.", "Inc.", "Corp.", "Ltd."
+  ];
+  abbrevs.forEach(abb => {
+    const placeholder = abb.replace(/\./g, '___DOT___');
+    protectedText = protectedText.split(abb).join(placeholder);
+  });
+
+  const rawSents = protectedText
     .split(/(?<=[.!?])\s+(?=[A-Z"'(])|(?<=[.!?])\s*\n/)
-    .filter(s => s.trim().length > 5);
+    .map(s => s.split('___DOT___').join('.').trim())
+    .filter(s => s.length > 5);
 
   const sentences = [];
   let sentIdx = 0;

@@ -289,9 +289,21 @@ function analyzeText(rawText) {
   ['\u200b','\u200c','\u200d','\ufeff','\u00ad'].forEach(c => { clean = clean.split(c).join(''); });
   clean = cleanPDFText(clean);
 
-  const rawSents = clean
+  let protectedText = clean;
+  const abbrevs = [
+    "Md.", "Dr.", "Prof.", "Mr.", "Mrs.", "Ms.", "et al.", "e.g.", "i.e.",
+    "Fig.", "Figs.", "Table.", "vs.", "al.", "Jan.", "Feb.", "Mar.", "Apr.",
+    "Aug.", "Sept.", "Oct.", "Nov.", "Dec.", "Dept.", "Univ.", "Inc.", "Corp.", "Ltd."
+  ];
+  abbrevs.forEach(abb => {
+    const placeholder = abb.replace(/\./g, '___DOT___');
+    protectedText = protectedText.split(abb).join(placeholder);
+  });
+
+  const rawSents = protectedText
     .split(/(?<=[.!?])\s+(?=[A-Z"'(])|(?<=[.!?])\s*\n/)
-    .filter(s => s.trim().length > 5);
+    .map(s => s.split('___DOT___').join('.').trim())
+    .filter(s => s.length > 5);
 
   const sentences = [];
   let sentIdx = 0;
@@ -877,7 +889,7 @@ function renderStudioDocument(r, rawText) {
     }
 
     span.innerHTML = tagHtml + escapeHtml(s.text) + ' ';
-    span.title = `Sentence #${s.idx + 1} | Perplexity: ${s.perplexity.toFixed(1)} | Class: ${s.classification}`;
+    span.title = `Sentence #${s.idx + 1} | Perplexity: ${(typeof s.perplexity === 'number' ? s.perplexity : 50).toFixed(1)} | Class: ${s.classification || 'human'}`;
 
     span.addEventListener('click', () => {
       // Remove previous active focus
@@ -947,7 +959,7 @@ function renderSidebarDrawer(r) {
   if (mAiSents) mAiSents.textContent = r.aiSentences;
 
   const mBurst = document.getElementById('m-burstiness');
-  if (mBurst) mBurst.textContent = r.burstiness.toFixed(1);
+  if (mBurst) mBurst.textContent = (typeof r.burstiness === 'number' ? r.burstiness : 0).toFixed(1);
 
   const mEvasion = document.getElementById('m-evasion');
   if (mEvasion) {
@@ -956,7 +968,7 @@ function renderSidebarDrawer(r) {
   }
 
   const mPerp = document.getElementById('m-perplexity');
-  if (mPerp) mPerp.textContent = r.avg.toFixed(1);
+  if (mPerp) mPerp.textContent = (typeof r.avg === 'number' ? r.avg : 50).toFixed(1);
 
   // Match Breakdown Cards
   const matchContainer = document.getElementById('match-items-container');
@@ -983,7 +995,7 @@ function renderSidebarDrawer(r) {
         card.innerHTML = `
           <div class="match-card-header">
             <span class="match-tag-text">${isPolished ? '🟡 AI-Polished' : '🔴 AI-Direct'} Match #${idx + 1}</span>
-            <span class="match-score-text">PPX: ${s.perplexity.toFixed(1)}</span>
+            <span class="match-score-text">PPX: ${(typeof s.perplexity === 'number' ? s.perplexity : 50).toFixed(1)}</span>
           </div>
           <p class="match-card-snippet">"${escapeHtml(s.text)}"</p>
         `;
@@ -1185,7 +1197,7 @@ function renderPrintReport(r, rawText) {
         <tr>
           <td style="font-family:monospace; color:#64748b;">${String(s.idx + 1).padStart(2,'0')}</td>
           <td>${escapeHtml(s.text)}</td>
-          <td style="font-family:monospace;">${s.perplexity.toFixed(1)}</td>
+          <td style="font-family:monospace;">${(typeof s.perplexity === 'number' ? s.perplexity : 50).toFixed(1)}</td>
           <td ${clsMap[s.classification] || ''}>${labelMap[s.classification] || s.classification}</td>
         </tr>
       `;
