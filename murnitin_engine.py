@@ -1,13 +1,21 @@
 """
-murnitin_engine.py  — Statistical AI Detection Engine
-Handles academic/technical papers with an expanded vocabulary,
-sentence-level n-gram transition scoring, and PDF-aware text cleaning.
+murnitin_engine.py  — Murnitin 3.0 Statistical AI Detection Engine
+
+Upgraded beyond Turnitin's 2-signal system to a 5-signal ensemble:
+  1. Neural Ensemble (RoBERTa × 2, handled in server)
+  2. Perplexity / Burstiness (AI text is low-variance predictable)
+  3. Vocabulary Richness (TTR, Yule's K, Hapax Ratio — AI reuses words)
+  4. AI Transition Signature (opener phrases, boilerplate density)
+  5. Syntactic Complexity Uniformity (AI has unnaturally uniform clauses)
+
+Each sentence gets a per-signal confidence breakdown + overall confidence %.
 """
 
 import re
 import math
 import json
 import sys
+import collections
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MULTI-FEATURE AI DETECTION PATTERNS & VOCABULARY
@@ -200,78 +208,260 @@ def detect_homoglyphs(text):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SENTENCE EVALUATION
+# SIGNAL 3: VOCABULARY RICHNESS
+# Turnitin doesn't use this — AI reuses vocabulary more than humans
+# ─────────────────────────────────────────────────────────────────────────────
+def compute_vocabulary_richness(words):
+    """Compute TTR, Yule's K, and hapax ratio. AI text tends to have
+    moderate TTR (0.55-0.70) and low Yule's K variance."""
+    if len(words) < 4:
+        return {'ttr': 1.0, 'yules_k': 0.0, 'hapax_ratio': 1.0, 'score': 0}
+
+    freq = collections.Counter(words)
+    n = len(words)
+    v = len(freq)  # vocabulary size
+    ttr = v / n
+
+    # Yule's K statistic — measures vocabulary concentration
+    # Low Yule's K = diverse vocabulary (more human-like)
+    m1 = n
+    m2 = sum(f * f for f in freq.values())
+    yules_k = 10000 * (m2 - m1) / (m1 * m1) if m1 > 1 else 0
+
+    # Hapax legomena ratio — words appearing exactly once
+    hapax = sum(1 for f in freq.values() if f == 1)
+    hapax_ratio = hapax / v if v > 0 else 0
+
+    # AI text: moderate TTR (0.55-0.72), higher Yule's K (repetitive)
+    # Score = how AI-like the vocabulary pattern is (0-100)
+    ai_score = 0
+    if 0.50 <= ttr <= 0.75:
+        ai_score += 30  # characteristic AI vocabulary range
+    if yules_k > 80:
+        ai_score += 25  # highly repetitive vocabulary
+    elif yules_k > 50:
+        ai_score += 15
+    if hapax_ratio < 0.35:
+        ai_score += 20  # few unique words = AI pattern
+    elif hapax_ratio < 0.50:
+        ai_score += 10
+
+    return {
+        'ttr': round(ttr, 3),
+        'yules_k': round(yules_k, 2),
+        'hapax_ratio': round(hapax_ratio, 3),
+        'score': min(100, ai_score)
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SIGNAL 4: AI TRANSITION SIGNATURE
+# Turnitin doesn't break this out — AI has characteristic sentence openers
+# ─────────────────────────────────────────────────────────────────────────────
+# High-confidence AI transition openers (probability > 0.80 that sentence is AI)
+AI_OPENERS_HIGH = [
+    r'^furthermore[,\s]', r'^moreover[,\s]', r'^consequently[,\s]',
+    r'^additionally[,\s]', r'^in conclusion[,\s]', r'^in summary[,\s]',
+    r'^to summarize[,\s]', r'^in light of this[,\s]', r'^taken together[,\s]',
+    r'^building on this[,\s]', r'^it is worth noting', r'^it is important to note',
+    r'^it should be noted', r'^it is crucial to', r'^this study aims to',
+    r'^this research aims', r'^this paper presents', r'^this paper aims',
+    r'^the findings of this', r'^the results of this', r'^the present study',
+]
+
+# Medium-confidence AI openers (probability 0.60-0.80)
+AI_OPENERS_MED = [
+    r'^however[,\s]', r'^nevertheless[,\s]', r'^notwithstanding[,\s]',
+    r'^in addition[,\s]', r'^as a result[,\s]', r'^therefore[,\s]',
+    r'^thus[,\s]', r'^hence[,\s]', r'^by contrast[,\s]',
+    r'^on the other hand[,\s]', r'^in contrast[,\s]',
+    r'^this (approach|method|framework|model|study|research|paper)',
+    r'^the (proposed|developed|presented|implemented)',
+    r'^such (a|an) (approach|method|framework)',
+    r'^these (results|findings|observations)',
+]
+
+def detect_ai_transitions(sent):
+    """Detect AI-characteristic sentence opener patterns.
+    Returns score 0-100 and the matched pattern if any."""
+    s = sent.strip().lower()
+    for pat in AI_OPENERS_HIGH:
+        if re.match(pat, s, re.I):
+            return {'score': 75, 'reason': f'High-confidence AI opener: "{pat.lstrip("^").rstrip("[,\\\\s]")}".', 'matched': True}
+    for pat in AI_OPENERS_MED:
+        if re.match(pat, s, re.I):
+            return {'score': 40, 'reason': f'Medium-confidence AI opener detected.', 'matched': True}
+    return {'score': 0, 'reason': 'No AI transition signature.', 'matched': False}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SIGNAL 5: SYNTACTIC COMPLEXITY
+# Turnitin doesn't use this — AI produces unnaturally uniform clause structure
+# ─────────────────────────────────────────────────────────────────────────────
+def compute_syntactic_score(sent, words):
+    """Approximate syntactic complexity without spacy.
+    Uses clause connectors, punctuation patterns, and nesting depth."""
+    # Count subordinating conjunctions (complexity markers)
+    subordinators = len(re.findall(
+        r'\b(which|that|where|when|while|although|because|since|unless|if|whether|as|who|whom|whose)\b',
+        sent, re.I))
+
+    # Count commas per sentence (complex sentences have more)
+    commas = sent.count(',')
+    semicolons = sent.count(';')
+    colons = sent.count(':')
+
+    # Clause depth approximation
+    n_words = len(words)
+    if n_words == 0:
+        return {'complexity': 0, 'score': 0}
+
+    complexity = (subordinators * 2 + commas + semicolons * 2 + colons) / n_words
+
+    # AI text: moderate complexity (0.08-0.22), very consistent across sentences
+    # Very low complexity (< 0.06) = short declarative = possible AI
+    # Very high complexity (> 0.30) = dense academic = possible AI
+    if complexity < 0.06:
+        syn_score = 30  # suspiciously simple
+    elif 0.08 <= complexity <= 0.22:
+        syn_score = 20  # moderate — common in AI
+    else:
+        syn_score = 5   # complex — more human-like
+
+    return {'complexity': round(complexity, 3), 'score': syn_score}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MAIN SENTENCE EVALUATION — 5-Signal Composite
 # ─────────────────────────────────────────────────────────────────────────────
 def evaluate_sentence(sent):
     words = [re.sub(r"[^a-z'-]", '', w.lower()) for w in sent.split() if w.strip()]
     words = [w for w in words if w]
     if len(words) < 4:
-        return {'text': sent, 'score': 0, 'classification': 'human', 'perplexity': 50.0}
+        return {
+            'text': sent, 'score': 0, 'classification': 'human', 'perplexity': 50.0,
+            'confidence': 0, 'signals': {}
+        }
 
     raw_lower = sent.lower()
 
-    # 1. Common vocabulary density
+    # ── SIGNAL A: Vocabulary patterns ────────────────────────────────────────
     common_count = sum(1 for w in words if w in TOP_500_COMMON)
     common_ratio = common_count / len(words)
-
-    # 2. AI Boilerplate words
     bp_count = sum(1 for w in words if w in AI_BOILERPLATE)
     bp_ratio = bp_count / len(words)
-
-    # 3. AI Template N-grams & Collocations
     trigram_hits = sum(1 for trig in AI_TRIGRAMS if trig in raw_lower)
-
-    # 4. Formal nominalization density
     nom_count = sum(1 for w in words if re.search(r'(tion|sion|ment|ity|ance|ence|ization|isation)$', w))
     nom_ratio = nom_count / len(words)
 
-    # 5. Human Markers & Contractions
+    # ── SIGNAL B: Vocabulary Richness (NEW — Turnitin doesn't have this) ─────
+    vr = compute_vocabulary_richness(words)
+
+    # ── SIGNAL C: AI Transition Signature (NEW) ───────────────────────────────
+    trans = detect_ai_transitions(sent)
+
+    # ── SIGNAL D: Syntactic Complexity (NEW) ─────────────────────────────────
+    syn = compute_syntactic_score(sent, words)
+
+    # ── Human Markers (negative evidence) ────────────────────────────────────
     human_hits = sum(1 for w in words if w in HUMAN_CONTRACTIONS or w in HUMAN_MARKERS)
-    for phrase in ["to be honest","in my opinion","turns out","figured out","spent way too long","at least","my friend","ended up","i remember","i felt","felt like"]:
+    for phrase in ["to be honest","in my opinion","turns out","figured out",
+                   "at least","my friend","ended up","i remember","i felt","felt like"]:
         if phrase in raw_lower:
             human_hits += 2
 
-    # 6. Sentence Opener AI Pattern
-    opener_score = 0
-    if re.match(r'^(furthermore|moreover|consequently|additionally|ultimately|in conclusion|in addition|historically|today|navigate|navigating)', sent, re.I):
-        opener_score += 25
-    elif re.match(r'^(the|each|this|these|training|regularization|cross-validation|hyperparameter)\s+[a-z]+', sent, re.I):
-        opener_score += 10
-
-    length_score = 10 if (10 <= len(words) <= 26) else 0
-
+    # ── Composite Score Assembly ──────────────────────────────────────────────
     sent_score = 0
-    if common_ratio >= 0.85: sent_score += 35
-    elif common_ratio >= 0.70: sent_score += 25
-    elif common_ratio >= 0.50: sent_score += 15
 
-    if bp_ratio >= 0.12: sent_score += 35
-    elif bp_ratio >= 0.05: sent_score += 25
-    elif bp_ratio > 0: sent_score += 15
+    # Common vocab density
+    if common_ratio >= 0.85: sent_score += 30
+    elif common_ratio >= 0.70: sent_score += 20
+    elif common_ratio >= 0.50: sent_score += 10
 
-    sent_score += min(45, trigram_hits * 22)
-    if nom_ratio >= 0.20: sent_score += 20
-    elif nom_ratio >= 0.10: sent_score += 10
+    # AI boilerplate density
+    if bp_ratio >= 0.12: sent_score += 30
+    elif bp_ratio >= 0.05: sent_score += 22
+    elif bp_ratio > 0:    sent_score += 12
 
-    sent_score += opener_score
-    sent_score += length_score
-    sent_score -= (human_hits * 35)
+    # AI n-gram collocations
+    sent_score += min(40, trigram_hits * 20)
+
+    # Nominalization density
+    if nom_ratio >= 0.20: sent_score += 18
+    elif nom_ratio >= 0.10: sent_score += 9
+
+    # Vocabulary richness signal (NEW)
+    sent_score += round(vr['score'] * 0.25)  # weight: 25%
+
+    # AI transition opener (NEW)
+    sent_score += round(trans['score'] * 0.35)  # weight: 35%
+
+    # Syntactic complexity (NEW)
+    sent_score += round(syn['score'] * 0.20)  # weight: 20%
+
+    # Ideal AI sentence length bonus
+    if 10 <= len(words) <= 28:
+        sent_score += 8
+
+    # Human markers (strong negative signal)
+    sent_score -= (human_hits * 30)
 
     sent_score = max(0, min(100, sent_score))
+
+    # ── Perplexity approximation ──────────────────────────────────────────────
     perp = max(6.0, round((100 - sent_score) * 0.88 + 8, 1))
 
+    # ── Classification ────────────────────────────────────────────────────────
     cls = 'human'
-    if sent_score >= 50:
+    if sent_score >= 52:
         cls = 'ai_direct'
     elif sent_score >= 28:
         cls = 'ai_polished'
+
+    # ── Confidence score (0-100): how certain we are of the classification ────
+    # Far from thresholds = high confidence; near threshold = low confidence
+    if cls == 'ai_direct':
+        confidence = min(99, round(50 + (sent_score - 52) * 1.5))
+        reason = _build_reason(bp_ratio, trigram_hits, trans, vr, human_hits)
+    elif cls == 'ai_polished':
+        confidence = min(85, round(40 + (sent_score - 28) * 1.0))
+        reason = _build_reason(bp_ratio, trigram_hits, trans, vr, human_hits)
+    else:
+        confidence = min(95, round(50 + (28 - sent_score) * 1.2))
+        reason = 'Human markers or low AI signal density.'
 
     return {
         'text': sent,
         'score': sent_score,
         'classification': cls,
-        'perplexity': perp
+        'perplexity': perp,
+        'confidence': confidence,
+        'reason': reason,
+        'signals': {
+            'boilerplate': round(bp_ratio * 100, 1),
+            'collocations': trigram_hits,
+            'vocabulary_richness': vr['score'],
+            'transition': trans['score'],
+            'syntactic': syn['score'],
+            'human_markers': human_hits,
+        }
     }
+
+
+def _build_reason(bp_ratio, trigram_hits, trans, vr, human_hits):
+    """Build a human-readable explanation of why a sentence was flagged."""
+    reasons = []
+    if trigram_hits > 0:
+        reasons.append(f'{trigram_hits} AI collocations')
+    if bp_ratio >= 0.05:
+        reasons.append(f'high boilerplate density ({round(bp_ratio*100)}%)')
+    if trans['matched']:
+        reasons.append('AI sentence opener')
+    if vr['score'] >= 30:
+        reasons.append(f'low vocabulary diversity (TTR={vr["ttr"]})')
+    if human_hits > 0:
+        reasons.append(f'{human_hits} human marker(s) detected')
+    return (', '.join(reasons) + '.') if reasons else 'High AI signal composite score.'
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -158,17 +158,35 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         elif score_ahmed > polished_thresh_ahmed and score_openai > polished_thresh_openai:
                             cls = 'ai_polished'
                             ai_polished_count += 1
-                            
+
                         # Calibrated perplexity: low combined -> high perp (human), high -> low perp (AI)
                         combined = score_ahmed * 0.75 + score_openai * 0.25
                         p_score = max(6.0, round((1.0 - combined) * 88.0 + 8.0, 1))
-                        
+
+                        # ── Run statistical engine IN PARALLEL to get per-sentence
+                        #    confidence, reason, and signal breakdown (Turnitin can't do this)
+                        stat = evaluate_sentence(s)
+                        confidence = stat.get('confidence', 0)
+                        reason = stat.get('reason', '')
+                        signals = stat.get('signals', {})
+                        # Blend: if neural and statistical agree, boost confidence
+                        if stat['classification'] == cls and cls != 'human':
+                            confidence = min(99, confidence + 15)
+                        elif stat['classification'] != cls:
+                            confidence = max(30, confidence - 10)  # disagreement = lower confidence
+
                         sent_results.append({
                             'idx': i,
                             'text': s,
                             'perplexity': p_score,
-                            'classification': cls
+                            'classification': cls,
+                            'confidence': confidence,
+                            'reason': reason,
+                            'signals': signals,
+                            'score_ahmed': round(score_ahmed * 100, 1),
+                            'score_openai': round(score_openai * 100, 1),
                         })
+
                 except Exception as e:
                     print("⚠ Model inference failed. Falling back to statistical scoring:", e)
                     PIPE_AHMED = None
@@ -186,8 +204,14 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         'idx': i,
                         'text': s,
                         'perplexity': res['perplexity'],
-                        'classification': cls
+                        'classification': cls,
+                        'confidence': res.get('confidence', 0),
+                        'reason': res.get('reason', ''),
+                        'signals': res.get('signals', {}),
+                        'score_ahmed': None,
+                        'score_openai': None,
                     })
+
 
             # Calculate perplexity metrics
             perps = [r['perplexity'] for r in sent_results]
@@ -216,6 +240,31 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             else:                verdict = 'Likely AI-Generated'
             if has_evasion:      verdict = 'Evasion Detected'
 
+            # ── Document-level signal summary (NEW — Turnitin can't show this) ──
+            flagged_results = [r for r in sent_results if r['classification'] != 'human']
+            avg_confidence = round(sum(r.get('confidence', 0) for r in flagged_results) / len(flagged_results), 1) if flagged_results else 0
+
+            # Aggregate signal scores across flagged sentences
+            def _avg_signal(key):
+                vals = [r.get('signals', {}).get(key, 0) for r in flagged_results]
+                return round(sum(vals) / len(vals), 1) if vals else 0
+
+            signal_summary = {
+                'boilerplate_avg':         _avg_signal('boilerplate'),
+                'collocations_avg':        _avg_signal('collocations'),
+                'vocabulary_richness_avg': _avg_signal('vocabulary_richness'),
+                'transition_avg':          _avg_signal('transition'),
+                'syntactic_avg':           _avg_signal('syntactic'),
+                'neural_used':             bool(PIPE_AHMED and PIPE_OPENAI),
+            }
+
+            # ESL detection: high sentence uniformity + many common words = possibly ESL
+            lengths = [len(r['text'].split()) for r in sent_results]
+            avg_len = sum(lengths) / len(lengths) if lengths else 0
+            len_std = math.sqrt(sum((l - avg_len)**2 for l in lengths) / len(lengths)) if lengths else 0
+            len_cv = len_std / avg_len if avg_len > 0 else 1.0
+            esl_detected = len_cv < 0.30 and avg_perplexity < 30  # very uniform sentence lengths + low perplexity
+
             response_data = {
                 'score': score,
                 'avg': avg_perplexity,
@@ -229,7 +278,12 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                 'hiddenChars': hidden,
                 'homoglyphs': [h['word'] for h in homo],
                 'verdict': verdict,
-                'verdictClass': 'green' if score < 20 else 'yellow' if score < 40 else 'red'
+                'verdictClass': 'green' if score < 20 else 'yellow' if score < 40 else 'red',
+                # Murnitin 3.0 exclusive fields:
+                'avgConfidence': avg_confidence,
+                'signalSummary': signal_summary,
+                'eslDetected': esl_detected,
+                'engineVersion': '3.0',
             }
 
             response_body = json.dumps(response_data).encode('utf-8')

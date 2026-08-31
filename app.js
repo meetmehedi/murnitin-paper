@@ -1011,12 +1011,22 @@ function showSentenceXAIPopover(s, targetEl) {
   if (xaiSignals) {
     xaiSignals.innerHTML = '';
     const tags = [];
-    if (isDirect) {
-      tags.push('High Model Confidence', 'Predictable Token Entropy', 'LLM Syntactical Continuity');
-    } else if (isPolished) {
-      tags.push('Hybrid Vocabulary', 'Paraphrased Transitions', 'Mixed Entropy');
-    } else {
-      tags.push('Natural Human Stance', 'Dynamic Burstiness', 'Organic Lexical Variety');
+    if (s.confidence) {
+      tags.push(`🎯 ${s.confidence}% Confidence`);
+    }
+    if (s.reason) {
+      tags.push(`🔍 ${s.reason}`);
+    }
+    if (s.signals) {
+      if (s.signals.boilerplate > 0) tags.push(`Boilerplate: ${s.signals.boilerplate}%`);
+      if (s.signals.collocations > 0) tags.push(`${s.signals.collocations} AI Collocations`);
+      if (s.signals.transition > 0) tags.push('AI Transition Opener');
+      if (s.signals.vocabulary_richness > 20) tags.push('Low Vocab Diversity');
+    }
+    if (tags.length === 0) {
+      if (isDirect) tags.push('High Model Confidence', 'Predictable Token Entropy');
+      else if (isPolished) tags.push('Hybrid Vocabulary', 'Paraphrased Transitions');
+      else tags.push('Natural Human Stance', 'Organic Lexical Variety');
     }
     tags.forEach(t => {
       const tagSpan = document.createElement('span');
@@ -1134,12 +1144,17 @@ function renderSidebarDrawer(r) {
         card.className = `match-card-item ${isPolished ? 'polished-card' : ''}`;
         card.id = `match-card-${s.idx}`;
 
+        const confHtml = s.confidence ? `<span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-left:auto;">${s.confidence}% Conf</span>` : '';
+        const reasonHtml = s.reason ? `<div style="font-size:0.72rem; color:var(--t-blue); margin-top:0.35rem; font-family:var(--font-mono); opacity:0.9;">↳ Evidence: ${escapeHtml(s.reason)}</div>` : '';
+
         card.innerHTML = `
-          <div class="match-card-header">
+          <div class="match-card-header" style="display:flex; align-items:center; gap:0.5rem;">
             <span class="match-tag-text">${isPolished ? '🟡 AI-Polished' : '🔴 AI-Direct'} Match #${idx + 1}</span>
             <span class="match-score-text">PPX: ${(typeof s.perplexity === 'number' ? s.perplexity : 50).toFixed(1)}</span>
+            ${confHtml}
           </div>
           <p class="match-card-snippet">"${escapeHtml(s.text)}"</p>
+          ${reasonHtml}
         `;
 
         card.addEventListener('click', () => {
