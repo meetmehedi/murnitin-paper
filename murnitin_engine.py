@@ -134,6 +134,12 @@ def clean_pdf_text(text):
     text = re.sub(r'Table\s+\d+', '', text)
     text = re.sub(r'Algorithm\s+\d+', '', text)
     text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE)
+
+    # Exclude bibliography / references section from prose scoring
+    ref_match = re.search(r'\n\s*(references|bibliography|works cited|literature cited)\s*\n', text, re.IGNORECASE)
+    if ref_match and ref_match.start() > 200:
+        text = text[:ref_match.start()]
+
     return text.strip()
 
 

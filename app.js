@@ -172,6 +172,13 @@ function cleanPDFText(text) {
   cleaned = cleaned.replace(/\(\d{4}\)/g, '');
   cleaned = cleaned.replace(/Fig\.\s*\d+/gi, '');
   cleaned = cleaned.replace(/Table\s+\d+/gi, '');
+
+  // Exclude bibliography/reference sections from prose AI calculation
+  const refIndex = cleaned.search(/\n\s*(references|bibliography|works cited|literature cited)\s*\n/i);
+  if (refIndex !== -1 && refIndex > 200) {
+    cleaned = cleaned.slice(0, refIndex);
+  }
+
   return cleaned.trim();
 }
 
@@ -1538,20 +1545,23 @@ function generateMurnitinPDF(r, rawText) {
         styles: { font: 'helvetica', fontSize: 7, cellPadding: 2.5 },
         headStyles: { fillColor: C.navyBar, textColor: C.white, fontStyle: 'bold' },
         columnStyles: {
-          0: { cellWidth: 8, halign: 'center', fontStyle: 'bold' },
-          1: { cellWidth: 110 },
+          0: { cellWidth: 12, halign: 'center', fontStyle: 'bold' },
+          1: { cellWidth: 106 },
           2: { cellWidth: 20, halign: 'center' },
           3: { cellWidth: 32, halign: 'center', fontStyle: 'bold' },
         },
         alternateRowStyles: { fillColor: C.gray100 },
         didDrawPage: () => {
           drawPageHeader('Sentence-by-Sentence Integrity Analysis');
-          drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '2');
         }
       });
     }
 
-    drawPageFooter(doc.internal.getCurrentPageInfo().pageNumber, '2');
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let p = 2; p <= totalPages; p++) {
+      doc.setPage(p);
+      drawPageFooter(p, totalPages);
+    }
 
     const filename = `Murnitin_Integrity_Report_${activeSubmissionId}_${new Date().toISOString().slice(0,10)}.pdf`;
     doc.save(filename);
