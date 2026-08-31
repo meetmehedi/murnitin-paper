@@ -143,24 +143,23 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         # OpenAI detector: labels 'Fake' (AI) or 'Real' (human)
                         score_openai = p_openai['score'] if p_openai['label'] == 'Fake' else (1.0 - p_openai['score'])
                         
-                        # DUAL-GATE: Both models must agree above calibrated thresholds.
-                        # Calibrated via grid search on mis_v5.pdf (refs stripped) to match Turnitin 49%.
-                        # ESL mode uses tighter thresholds to reduce false positives in non-native writing.
-                        direct_thresh_ahmed  = 0.95 if esl_mode else 0.92
-                        direct_thresh_openai = 0.30 if esl_mode else 0.24
-                        polished_thresh_ahmed  = 0.84 if esl_mode else 0.78
-                        polished_thresh_openai = 0.22 if esl_mode else 0.18
+                        # Continuous Neural Ensemble Probability:
+                        # Blends the academic RoBERTa model (70%) with the conservative baseline detector (30%)
+                        combined = (score_ahmed * 0.70) + (score_openai * 0.30)
+
+                        # Thresholds: In ESL Mode, apply higher sensitivity threshold to protect non-native writers
+                        direct_thresh = 0.68 if esl_mode else 0.58
+                        polished_thresh = 0.38 if esl_mode else 0.30
 
                         cls = 'human'
-                        if score_ahmed > direct_thresh_ahmed and score_openai > direct_thresh_openai:
+                        if combined >= direct_thresh:
                             cls = 'ai_direct'
                             ai_direct_count += 1
-                        elif score_ahmed > polished_thresh_ahmed and score_openai > polished_thresh_openai:
+                        elif combined >= polished_thresh:
                             cls = 'ai_polished'
                             ai_polished_count += 1
 
-                        # Calibrated perplexity: low combined -> high perp (human), high -> low perp (AI)
-                        combined = score_ahmed * 0.75 + score_openai * 0.25
+                        # Calibrated perplexity for visual chart
                         p_score = max(6.0, round((1.0 - combined) * 88.0 + 8.0, 1))
 
                         # ── Run statistical engine IN PARALLEL to get per-sentence
