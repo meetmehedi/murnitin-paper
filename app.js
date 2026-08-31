@@ -652,13 +652,12 @@ async function handlePDFFile(file) {
     for (let i = 1; i <= pdf.numPages; i++) {
       if (extractMsg) extractMsg.textContent = `Extracting page ${i} of ${pdf.numPages}…`;
       const page    = await pdf.getPage(i);
-      // Use hasEOL to preserve paragraph/line breaks from the PDF layout.
-      // Without this, 'References\n[1]...' becomes 'References [1]...' and breaks
-      // the section-stripping regex in cleanText() and on the server.
-      const pageText = content.items.map(item => {
-        const eol = (item.hasEOL || item.str === '') ? '\n' : '';
-        return item.str + eol;
-      }).join(' ');
+      const content = await page.getTextContent();
+      // Use hasEOL or whitespace to preserve paragraph/line breaks from PDF layout
+      let pageText = '';
+      for (const item of content.items) {
+        pageText += (item.str || '') + (item.hasEOL ? '\n' : ' ');
+      }
       fullText += pageText + '\n';
     }
 
