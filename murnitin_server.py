@@ -82,6 +82,18 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             homo = detect_homoglyphs(raw_text)
             has_evasion = len(hidden) > 0 or len(homo) > 0
 
+            # ── CRITICAL: Strip References / Bibliography BEFORE cleaning ──
+            # Must run on raw text BEFORE clean_pdf_text(), because the cleaner
+            # can merge the heading line into surrounding text, breaking the regex.
+            # References section only inflates the human sentence count and dilutes AI%.
+            _ref_pat = re.compile(
+                r'(?:^|\n)[ \t]*(References|Bibliography|Works Cited|Literature Cited|REFERENCES|BIBLIOGRAPHY)[ \t]*(?:\n|:|\[|\Z)',
+                re.MULTILINE
+            )
+            _ref_m = _ref_pat.search(raw_text)
+            if _ref_m and _ref_m.start() > 500:
+                raw_text = raw_text[:_ref_m.start()]
+
             # Clean text & merge broken PDF column hyphens (e.g., 'infor- mation' -> 'information')
             clean_text = raw_text
             clean_text = re.sub(r'(\w+)-\s+(\w+)', r'\1\2', clean_text)
@@ -100,17 +112,6 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             ]
             for pat in WATERMARK_PATTERNS:
                 clean_text = re.sub(pat, ' ', clean_text, flags=re.IGNORECASE)
-
-            # ── CRITICAL: Strip References / Bibliography BEFORE sentence splitting ──
-            # Without this, citation entries inflate sentence count and dilute AI% score.
-            # e.g. 30 reference lines become 30 "human" sentences that pull the score down.
-            # Match "References" / "Bibliography" as a standalone line (typical PDF heading format).
-            ref_match = re.search(
-                r'(?:^|\n)[ \t]*(References|Bibliography|Works Cited|Literature Cited|REFERENCES|BIBLIOGRAPHY)[ \t]*(?:\n|:|\[|\Z)',
-                clean_text, re.MULTILINE
-            )
-            if ref_match and ref_match.start() > 300:
-                clean_text = clean_text[:ref_match.start()]
 
             # Robust sentence splitting with abbreviation protection
             sentences = split_sentences(clean_text)
@@ -142,12 +143,12 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         score_openai = p_openai['score'] if p_openai['label'] == 'Fake' else (1.0 - p_openai['score'])
                         
                         # DUAL-GATE: Both models must agree above calibrated thresholds.
-                        # Calibrated via grid search on mis_v5.pdf to match Turnitin 49% benchmark.
+                        # Calibrated via grid search on mis_v5.pdf (refs stripped) to match Turnitin 49%.
                         # ESL mode uses tighter thresholds to reduce false positives in non-native writing.
-                        direct_thresh_ahmed  = 0.94 if esl_mode else 0.90
-                        direct_thresh_openai = 0.28 if esl_mode else 0.22
-                        polished_thresh_ahmed  = 0.82 if esl_mode else 0.75
-                        polished_thresh_openai = 0.20 if esl_mode else 0.15
+                        direct_thresh_ahmed  = 0.95 if esl_mode else 0.92
+                        direct_thresh_openai = 0.30 if esl_mode else 0.24
+                        polished_thresh_ahmed  = 0.84 if esl_mode else 0.78
+                        polished_thresh_openai = 0.22 if esl_mode else 0.18
 
                         cls = 'human'
                         if score_ahmed > direct_thresh_ahmed and score_openai > direct_thresh_openai:
@@ -230,10 +231,12 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                 'verdictClass': 'green' if score < 20 else 'yellow' if score < 40 else 'red'
             }
 
+            response_body = json.dumps(response_data).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(response_body)))
             self.end_headers()
-            self.wfile.write(json.dumps(response_data).encode('utf-8'))
+            self.wfile.write(response_body)
         else:
             self.send_response(404)
             self.end_headers()
