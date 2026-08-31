@@ -1053,11 +1053,20 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.ph-meta-left {
+  flex: 1;
+  min-width: 0;
+  margin-right: 1.5rem;
+}
+
 .ph-meta-left h2 {
   font-family: var(--font-paper);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
+  line-height: 1.4;
   color: #1e293b;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .ph-meta-left p {
@@ -1073,6 +1082,7 @@ body {
   font-size: 0.75rem;
   font-weight: 600;
   color: #475569;
+  flex-shrink: 0;
 }
 
 .paper-divider {
@@ -1084,9 +1094,16 @@ body {
 .paper-content-article {
   font-family: var(--font-paper);
   font-size: 1.05rem;
-  line-height: 1.85;
+  line-height: 2.3;
   color: #1e293b;
   flex: 1;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.highlight-map {
+  line-height: 2.3;
+  word-spacing: 0.05rem;
 }
 
 .paper-footer-meta {
@@ -1107,10 +1124,12 @@ body {
   display: inline;
   position: relative;
   padding: 0.15rem 0.25rem;
-  margin: 0 0.1rem;
+  margin: 0 0.15rem;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s ease;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .hl-sent.ai-direct, .hl-sent.ai_direct, .hl-sent.ai {
@@ -1127,7 +1146,8 @@ body {
 
 .hl-sent.human {
   background: rgba(5, 150, 105, 0.08);
-  border-bottom: 1px dotted var(--t-green);
+  border-bottom: 1.5px solid rgba(5, 150, 105, 0.35);
+  color: #0f172a;
 }
 
 .hl-sent.evasion {

@@ -681,8 +681,8 @@ function applyReceiptAndModal(result, text, origin) {
   const wordCountVal   = text.split(/\s+/).filter(x => x.length > 0).length;
   const charCountVal   = text.length;
   activeSubmissionTitle = activeTab === 'pdf'
-    ? currentFileName.replace(/\.[^/.]+$/, "")
-    : (text.length > 40 ? text.slice(0, 40) + '…' : text);
+    ? currentFileName.replace(/\.[^/.]+$/, "").replace(/[_\s]+/g, " ")
+    : (text.length > 50 ? text.slice(0, 50) + '…' : text);
 
   // Update Header & Paper Title Tags
   const hdrId = document.getElementById('hdr-doc-id');
