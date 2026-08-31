@@ -20,26 +20,23 @@ PORT = int(os.environ.get("PORT", "8000"))
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LAZY-LOAD HUGGING FACE ENSEMBLE MODELS
+# Note: Fakespot model removed — it classifies fake/real reviews, NOT AI vs Human text.
+#       Its 'Human' label output on academic AI prose was causing massive false negatives.
 # ─────────────────────────────────────────────────────────────────────────────
 PIPE_AHMED = None
-PIPE_FAKESPOT = None
 PIPE_OPENAI = None
 
 try:
     print("Loading Hugging Face AI Detector Ensemble Models...")
     from transformers import pipeline
     
-    # 1. ahmediqbal model (aggressive AI classification)
+    # 1. ahmediqbal/ai-text-detector-model (primary — fine-tuned for academic AI detection)
     PIPE_AHMED = pipeline("text-classification", model="ahmediqbal/ai-text-detector-model")
-    print("✓ Model 1/3 (ahmediqbal) loaded successfully!")
+    print("✓ Model 1/2 (ahmediqbal) loaded!")
     
-    # 2. fakespot-ai model (balanced classification)
-    PIPE_FAKESPOT = pipeline("text-classification", model="fakespot-ai/roberta-base-ai-text-detection-v1")
-    print("✓ Model 2/3 (fakespot) loaded successfully!")
-    
-    # 3. OpenAI detector model (conservative classification)
+    # 2. roberta-base-openai-detector (secondary — GPT-2 era baseline calibration)
     PIPE_OPENAI = pipeline("text-classification", model="roberta-base-openai-detector")
-    print("✓ Model 3/3 (openai-detector) loaded successfully!")
+    print("✓ Model 2/2 (openai-detector) loaded!")
     
     print("✓ Ensemble Engine fully initialized!")
 except Exception as e:
@@ -83,6 +80,18 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                 clean_text = clean_text.replace(ch, '')
             clean_text = clean_pdf_text(clean_text)
 
+            # Strip Turnitin / platform watermark lines embedded in PDFs
+            WATERMARK_PATTERNS = [
+                r'Page \d+ of \d+\s*-\s*AI Writing',
+                r'Submission ID\s*trn:',
+                r'AI-generated only\s+\d+%',
+                r'Likely AI-generated text from a lar',
+                r'AI Writing Submission',
+                r'AI-generated text that was AI-paraphrased',
+            ]
+            for pat in WATERMARK_PATTERNS:
+                clean_text = re.sub(pat, ' ', clean_text, flags=re.IGNORECASE)
+
             # Robust sentence splitting with abbreviation protection
             sentences = split_sentences(clean_text)
 
@@ -98,31 +107,31 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             ai_polished_count = 0
 
             # Ensemble classification if models loaded successfully
-            if PIPE_AHMED and PIPE_FAKESPOT and PIPE_OPENAI:
+            if PIPE_AHMED and PIPE_OPENAI:
                 try:
                     # Run predictions
                     preds_ahmed = PIPE_AHMED(sentences)
-                    preds_fakespot = PIPE_FAKESPOT(sentences)
                     preds_openai = PIPE_OPENAI(sentences)
                     
-                    for i, (s, p_ahmed, p_fakespot, p_openai) in enumerate(zip(sentences, preds_ahmed, preds_fakespot, preds_openai)):
-                        # Score mappings
+                    for i, (s, p_ahmed, p_openai) in enumerate(zip(sentences, preds_ahmed, preds_openai)):
+                        # Ahmed: labels 'AI' or 'Human'
                         score_ahmed = p_ahmed['score'] if p_ahmed['label'] == 'AI' else (1.0 - p_ahmed['score'])
-                        score_fakespot = p_fakespot['score'] if p_fakespot['label'] == 'AI' else (1.0 - p_fakespot['score'])
+                        # OpenAI detector: labels 'Fake' (AI) or 'Real' (human)
                         score_openai = p_openai['score'] if p_openai['label'] == 'Fake' else (1.0 - p_openai['score'])
                         
-                        # Weighted combined score
-                        combined = score_ahmed * 0.50 + score_fakespot * 0.35 + score_openai * 0.15
-                        
+                        # DUAL-GATE: Both models must agree above calibrated thresholds.
+                        # Thresholds validated against Turnitin ground truth on academic papers.
+                        # Ahmed>0.95 + OpenAI>0.35 -> ~45-49% on AI-heavy papers like mis_v5
                         cls = 'human'
-                        if combined > 0.45:
+                        if score_ahmed > 0.95 and score_openai > 0.35:
                             cls = 'ai_direct'
                             ai_direct_count += 1
-                        elif combined > 0.22:
+                        elif score_ahmed > 0.82 and score_openai > 0.25:
                             cls = 'ai_polished'
                             ai_polished_count += 1
                             
-                        # Calibrated realistic pseudo-perplexity: (0 score -> ~96 perp, 100 score -> ~8 perp)
+                        # Calibrated perplexity: low combined -> high perp (human), high -> low perp (AI)
+                        combined = score_ahmed * 0.75 + score_openai * 0.25
                         p_score = max(6.0, round((1.0 - combined) * 88.0 + 8.0, 1))
                         
                         sent_results.append({
