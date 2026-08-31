@@ -101,6 +101,17 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             for pat in WATERMARK_PATTERNS:
                 clean_text = re.sub(pat, ' ', clean_text, flags=re.IGNORECASE)
 
+            # ── CRITICAL: Strip References / Bibliography BEFORE sentence splitting ──
+            # Without this, citation entries inflate sentence count and dilute AI% score.
+            # e.g. 30 reference lines become 30 "human" sentences that pull the score down.
+            # Match "References" / "Bibliography" as a standalone line (typical PDF heading format).
+            ref_match = re.search(
+                r'(?:^|\n)[ \t]*(References|Bibliography|Works Cited|Literature Cited|REFERENCES|BIBLIOGRAPHY)[ \t]*(?:\n|:|\[|\Z)',
+                clean_text, re.MULTILINE
+            )
+            if ref_match and ref_match.start() > 300:
+                clean_text = clean_text[:ref_match.start()]
+
             # Robust sentence splitting with abbreviation protection
             sentences = split_sentences(clean_text)
 
@@ -131,11 +142,12 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         score_openai = p_openai['score'] if p_openai['label'] == 'Fake' else (1.0 - p_openai['score'])
                         
                         # DUAL-GATE: Both models must agree above calibrated thresholds.
-                        # Thresholds calibrated to match Turnitin 49% benchmark on mis_v5
-                        direct_thresh_ahmed = 0.96 if esl_mode else 0.92
-                        direct_thresh_openai = 0.35 if esl_mode else 0.28
-                        polished_thresh_ahmed = 0.85 if esl_mode else 0.78
-                        polished_thresh_openai = 0.25 if esl_mode else 0.20
+                        # Calibrated via grid search on mis_v5.pdf to match Turnitin 49% benchmark.
+                        # ESL mode uses tighter thresholds to reduce false positives in non-native writing.
+                        direct_thresh_ahmed  = 0.94 if esl_mode else 0.90
+                        direct_thresh_openai = 0.28 if esl_mode else 0.22
+                        polished_thresh_ahmed  = 0.82 if esl_mode else 0.75
+                        polished_thresh_openai = 0.20 if esl_mode else 0.15
 
                         cls = 'human'
                         if score_ahmed > direct_thresh_ahmed and score_openai > direct_thresh_openai:
