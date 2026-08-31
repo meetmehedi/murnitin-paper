@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2.3.0">
+  <link rel="stylesheet" href="styles.css?v=2.4.0">
 </head>
 <body class="murnitin-theme">
 
@@ -116,8 +116,15 @@
                 <button class="tab-btn" data-tab="pdf" id="btn-tab-pdf">📄 PDF Upload</button>
               </div>
               
-              <!-- Sample Loaders -->
+              <!-- Sample Loaders & ESL Mode -->
               <div class="sample-preset-wrapper">
+                <div class="esl-toggle-container" title="Calibrates entropy thresholds for non-native English writers to eliminate false positives on formal academic transitions">
+                  <label class="esl-switch">
+                    <input type="checkbox" id="toggle-esl" />
+                    <span class="esl-slider"></span>
+                  </label>
+                  <span class="esl-title">🛡️ ESL Fairness Shield</span>
+                </div>
                 <span class="preset-label">Test Samples:</span>
                 <div class="sample-chips">
                   <button class="chip-btn active" data-sample="human">👤 Human Essay</button>
@@ -321,6 +328,20 @@
               <span>Murnitin Integrity Studio &middot; Sentence-Level Evidence</span>
               <span id="paper-page-indicator">Page 1 of 1</span>
             </div>
+          </div>
+
+          <!-- Floating Sentence XAI Popover -->
+          <div id="sentence-xai-popover" class="sent-xai-popover hidden">
+            <div class="xai-pop-header">
+              <span id="xai-pop-badge" class="xai-badge">AI-Direct</span>
+              <span id="xai-pop-ppx" class="xai-ppx">PPX: 12.4</span>
+              <button id="btn-close-popover" class="btn-pop-close" type="button" title="Close">✕</button>
+            </div>
+            <p id="xai-pop-text" class="xai-pop-snippet">"..."</p>
+            <div class="xai-pop-signals" id="xai-pop-signals">
+              <span class="xai-signal-tag">Formulaic LLM Sequence</span>
+            </div>
+            <button id="btn-xai-jump-match" class="btn-xai-jump" type="button">Inspect in Match Drawer →</button>
           </div>
 
         </div>
@@ -627,6 +648,6 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
   </script>
-  <script src="app.js?v=2.3.0"></script>
+  <script src="app.js?v=2.4.0"></script>
 </body>
 </html>

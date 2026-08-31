@@ -252,11 +252,11 @@ function evaluateSentence(sent) {
   else if (nomRatio >= 0.10) sentScore += 10;
 
   // Openers & Length
-  sentScore += openerScore;
-  sentScore += lengthScore;
-
-  // Human signal penalties
-  sentScore -= (humanHits * 35);
+  // ESL Fairness Mode adjustments
+  if (typeof isESLModeActive !== 'undefined' && isESLModeActive) {
+    openerScore = Math.max(0, openerScore - 15);
+    sentScore = Math.max(0, sentScore - 14);
+  }
 
   sentScore = Math.max(0, Math.min(100, sentScore));
 
@@ -900,10 +900,14 @@ function renderStudioDocument(r, rawText) {
     span.innerHTML = tagHtml + escapeHtml(s.text) + ' ';
     span.title = `Sentence #${s.idx + 1} | Perplexity: ${(typeof s.perplexity === 'number' ? s.perplexity : 50).toFixed(1)} | Class: ${s.classification || 'human'}`;
 
-    span.addEventListener('click', () => {
+    span.addEventListener('click', (e) => {
+      e.stopPropagation();
       // Remove previous active focus
       document.querySelectorAll('.hl-sent.active-focus').forEach(el => el.classList.remove('active-focus'));
       span.classList.add('active-focus');
+
+      // Show floating Sentence XAI Popover
+      showSentenceXAIPopover(s, span);
 
       // If drawer match item exists, scroll it
       const matchCard = document.getElementById(`match-card-${s.idx}`);
@@ -915,6 +919,103 @@ function renderStudioDocument(r, rawText) {
     });
 
     highlightMap.appendChild(span);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// FLOATING SENTENCE XAI POPOVER LOGIC
+// ═══════════════════════════════════════════════
+const xaiPopover = document.getElementById('sentence-xai-popover');
+const xaiBadge   = document.getElementById('xai-pop-badge');
+const xaiPpx     = document.getElementById('xai-pop-ppx');
+const xaiText    = document.getElementById('xai-pop-text');
+const xaiSignals = document.getElementById('xai-pop-signals');
+const btnXaiJump = document.getElementById('btn-xai-jump-match');
+const btnPopClose= document.getElementById('btn-close-popover');
+
+if (btnPopClose && xaiPopover) {
+  btnPopClose.addEventListener('click', () => xaiPopover.classList.add('hidden'));
+}
+
+document.addEventListener('click', (e) => {
+  if (xaiPopover && !xaiPopover.contains(e.target) && !e.target.closest('.hl-sent')) {
+    xaiPopover.classList.add('hidden');
+  }
+});
+
+function showSentenceXAIPopover(s, targetEl) {
+  if (!xaiPopover) return;
+
+  const rect = targetEl.getBoundingClientRect();
+  const popW = 320;
+  
+  let left = rect.left;
+  let top = rect.top - 180;
+
+  if (top < 70) top = rect.bottom + 10;
+  if (left + popW > window.innerWidth - 20) left = window.innerWidth - popW - 20;
+  if (left < 10) left = 10;
+
+  xaiPopover.style.left = `${left}px`;
+  xaiPopover.style.top = `${top}px`;
+
+  const isDirect   = s.classification === 'ai_direct';
+  const isPolished = s.classification === 'ai_polished';
+  const isHuman    = s.classification === 'human';
+
+  if (xaiBadge) {
+    xaiBadge.className = 'xai-badge ' + (s.classification || 'human');
+    xaiBadge.textContent = isDirect ? '🔴 AI-Direct' : isPolished ? '🟡 AI-Polished' : isHuman ? '🟢 Human' : '🟣 Evasion';
+  }
+
+  const ppxVal = typeof s.perplexity === 'number' ? s.perplexity : 50;
+  if (xaiPpx) {
+    xaiPpx.textContent = `PPX: ${ppxVal.toFixed(1)} ${ppxVal < 25 ? '(Low Entropy / AI)' : ppxVal < 55 ? '(Mixed Entropy)' : '(Diverse Human)'}`;
+  }
+
+  if (xaiText) {
+    xaiText.textContent = `"${s.text}"`;
+  }
+
+  if (xaiSignals) {
+    xaiSignals.innerHTML = '';
+    const tags = [];
+    if (isDirect) {
+      tags.push('High Model Confidence', 'Predictable Token Entropy', 'LLM Syntactical Continuity');
+    } else if (isPolished) {
+      tags.push('Hybrid Vocabulary', 'Paraphrased Transitions', 'Mixed Entropy');
+    } else {
+      tags.push('Natural Human Stance', 'Dynamic Burstiness', 'Organic Lexical Variety');
+    }
+    tags.forEach(t => {
+      const tagSpan = document.createElement('span');
+      tagSpan.className = 'xai-signal-tag';
+      tagSpan.textContent = t;
+      xaiSignals.appendChild(tagSpan);
+    });
+  }
+
+  if (btnXaiJump) {
+    btnXaiJump.onclick = () => {
+      xaiPopover.classList.add('hidden');
+      const matchCard = document.getElementById(`match-card-${s.idx}`);
+      if (matchCard) {
+        matchCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        matchCard.style.boxShadow = '0 0 0 2px var(--t-blue)';
+        setTimeout(() => { matchCard.style.boxShadow = ''; }, 2000);
+      }
+    };
+  }
+
+  xaiPopover.classList.remove('hidden');
+}
+
+// ESL Fairness Mode State
+let isESLModeActive = false;
+const toggleESL = document.getElementById('toggle-esl');
+if (toggleESL) {
+  toggleESL.addEventListener('change', () => {
+    isESLModeActive = toggleESL.checked;
   });
 }
 
