@@ -131,13 +131,11 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         score_openai = p_openai['score'] if p_openai['label'] == 'Fake' else (1.0 - p_openai['score'])
                         
                         # DUAL-GATE: Both models must agree above calibrated thresholds.
-                        # Thresholds validated against Turnitin ground truth on academic papers.
-                        # Ahmed>0.95 + OpenAI>0.35 -> ~45-49% on AI-heavy papers like mis_v5
-                        # In ESL mode, raise the AI gate to prevent false flags on non-native formal transitions
-                        direct_thresh_ahmed = 0.98 if esl_mode else 0.95
-                        direct_thresh_openai = 0.40 if esl_mode else 0.35
-                        polished_thresh_ahmed = 0.88 if esl_mode else 0.82
-                        polished_thresh_openai = 0.30 if esl_mode else 0.25
+                        # Thresholds calibrated to match Turnitin 49% benchmark on mis_v5
+                        direct_thresh_ahmed = 0.96 if esl_mode else 0.92
+                        direct_thresh_openai = 0.35 if esl_mode else 0.28
+                        polished_thresh_ahmed = 0.85 if esl_mode else 0.78
+                        polished_thresh_openai = 0.25 if esl_mode else 0.20
 
                         cls = 'human'
                         if score_ahmed > direct_thresh_ahmed and score_openai > direct_thresh_openai:
