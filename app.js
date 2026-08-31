@@ -586,8 +586,17 @@ if (dropZone && pdfInput) {
   });
 }
 
+const btnChangeFile = document.getElementById('btn-change-file');
+if (btnChangeFile && pdfInput) {
+  btnChangeFile.addEventListener('click', (e) => {
+    e.stopPropagation();
+    pdfInput.click();
+  });
+}
+
 if (clearBtn) {
-  clearBtn.addEventListener('click', () => {
+  clearBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     extractedPDFText = '';
     currentFileName = '';
     currentFileSize = '';

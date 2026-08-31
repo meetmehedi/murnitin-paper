@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2.1.0">
+  <link rel="stylesheet" href="styles.css?v=2.2.0">
 </head>
 <body class="murnitin-theme">
 
@@ -163,10 +163,17 @@
                 <div id="file-info" class="file-info-bar hidden">
                   <div class="file-icon-badge">📄</div>
                   <div class="file-meta-details">
-                    <span id="file-name" class="file-name-text">document.pdf</span>
+                    <span id="file-name" class="file-name-text" title="Uploaded Document">document.pdf</span>
                     <span id="file-size" class="file-size-text">0 KB</span>
                   </div>
-                  <button id="btn-clear-file" class="btn-icon-clear" title="Remove PDF file">✕</button>
+                  <div class="file-actions-group">
+                    <button id="btn-change-file" class="btn-change-file" type="button" title="Upload another PDF file">
+                      <span>🔄</span> Change PDF
+                    </button>
+                    <button id="btn-clear-file" class="btn-icon-clear" type="button" title="Remove this PDF file">
+                      ✕
+                    </button>
+                  </div>
                 </div>
 
                 <div id="pdf-extract-status" class="extract-status-banner hidden">
@@ -620,6 +627,6 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
   </script>
-  <script src="app.js?v=2.1.0"></script>
+  <script src="app.js?v=2.2.0"></script>
 </body>
 </html>
