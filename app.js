@@ -177,7 +177,19 @@ function cleanPDFText(text) {
 
 function evaluateSentence(sent) {
   const words = sent.toLowerCase().split(/\s+/).map(w => w.replace(/[^a-z'-]/g, '')).filter(w => w.length > 0);
-  if (words.length < 4) return { text: sent, score: 0, cls: 'human', perp: 50 };
+  if (words.length < 4) {
+    return {
+      text: sent,
+      score: 0,
+      classification: 'human',
+      perplexity: 50.0,
+      commonRatio: '0',
+      bpCount: 0,
+      trigramHits: 0,
+      nomRatio: '0',
+      humanHits: 0
+    };
+  }
 
   const rawLower = sent.toLowerCase();
 
@@ -1390,7 +1402,7 @@ function generateMurnitinPDF(r, rawText) {
     const tableRows = r.sentences.map(s => [
       String(s.idx + 1).padStart(2, '0'),
       s.text.length > 105 ? s.text.substring(0, 102) + '…' : s.text,
-      s.perplexity.toFixed(1),
+      (typeof s.perplexity === 'number' ? s.perplexity : 50).toFixed(1),
       s.classification === 'ai_direct' ? 'AI-DIRECT' : s.classification === 'ai_polished' ? 'AI-POLISHED' : 'HUMAN'
     ]);
 
