@@ -115,10 +115,10 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         combined = score_ahmed * 0.50 + score_fakespot * 0.35 + score_openai * 0.15
                         
                         cls = 'human'
-                        if combined > 0.60:
+                        if combined > 0.45:
                             cls = 'ai_direct'
                             ai_direct_count += 1
-                        elif combined > 0.30:
+                        elif combined > 0.22:
                             cls = 'ai_polished'
                             ai_polished_count += 1
                             
@@ -157,19 +157,24 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             variance = sum((p - avg_perplexity) ** 2 for p in perps) / len(perps)
             burstiness = round(math.sqrt(variance), 1)
 
-            # Calibrated AI Likelihood calculation
-            total_sentences = len(sentences)
-            calibrated_score = ((ai_direct_count * 1.0 + ai_polished_count * 0.5) / total_sentences) * 100
+            # Turnitin-Standard Word-Weighted AI Likelihood calculation
+            total_words = sum(len(s.split()) for s in sentences)
+            ai_direct_words = sum(len(r['text'].split()) for r in sent_results if r['classification'] == 'ai_direct')
+            ai_polished_words = sum(len(r['text'].split()) for r in sent_results if r['classification'] == 'ai_polished')
+            
+            weighted_ai_words = (ai_direct_words * 1.0) + (ai_polished_words * 0.90)
+            calibrated_score = (weighted_ai_words / total_words * 100.0) if total_words > 0 else 0.0
             
             if has_evasion:
                 calibrated_score = max(calibrated_score, 85.0)
             
             score = round(max(0.0, min(100.0, calibrated_score)))
 
-            # Verdict mapping
-            if score < 25:       verdict = 'Likely Human'
-            elif score < 55:     verdict = 'Inconclusive / Mixed'
-            elif score < 80:     verdict = 'Likely AI-Assisted'
+            # Verdict mapping matching Turnitin
+            if score < 20:       verdict = 'Likely Human'
+            elif score < 45:     verdict = 'Mostly Human'
+            elif score < 70:     verdict = 'Inconclusive / Mixed'
+            elif score < 85:     verdict = 'Likely AI-Assisted'
             else:                verdict = 'Likely AI-Generated'
             if has_evasion:      verdict = 'Evasion Detected'
 
@@ -181,7 +186,7 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                 'aiSentences': ai_direct_count + ai_polished_count,
                 'aiDirectCount': ai_direct_count,
                 'aiPolishedCount': ai_polished_count,
-                'aiFlaggedPct': round((ai_direct_count + ai_polished_count) / total_sentences * 100, 1),
+                'aiFlaggedPct': round((ai_direct_count + ai_polished_count) / len(sentences) * 100, 1),
                 'hasEvasion': has_evasion,
                 'hiddenChars': hidden,
                 'homoglyphs': [h['word'] for h in homo],
