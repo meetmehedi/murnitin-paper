@@ -195,8 +195,10 @@ function cleanPDFText(text) {
     cleaned = cleaned.replace(pat, ' ');
   }
 
-  // Exclude bibliography/reference sections from prose AI calculation
-  const refIndex = cleaned.search(/\n\s*(references|bibliography|works cited|literature cited)\s*\n/i);
+  // Exclude bibliography/reference sections from prose AI calculation.
+  // Match both standalone heading on its own line AND inline heading after a sentence.
+  const refPattern = /(?:\n|\s{2,}|\.)\s*(References|Bibliography|Works Cited|Literature Cited|REFERENCES|BIBLIOGRAPHY)\s*(?:\n|\[|:)/i;
+  const refIndex = cleaned.search(refPattern);
   if (refIndex !== -1 && refIndex > 200) {
     cleaned = cleaned.slice(0, refIndex);
   }
@@ -650,9 +652,14 @@ async function handlePDFFile(file) {
     for (let i = 1; i <= pdf.numPages; i++) {
       if (extractMsg) extractMsg.textContent = `Extracting page ${i} of ${pdf.numPages}…`;
       const page    = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      const pageText = content.items.map(item => item.str).join(' ');
-      fullText += pageText + ' ';
+      // Use hasEOL to preserve paragraph/line breaks from the PDF layout.
+      // Without this, 'References\n[1]...' becomes 'References [1]...' and breaks
+      // the section-stripping regex in cleanText() and on the server.
+      const pageText = content.items.map(item => {
+        const eol = (item.hasEOL || item.str === '') ? '\n' : '';
+        return item.str + eol;
+      }).join(' ');
+      fullText += pageText + '\n';
     }
 
     extractedPDFText = fullText.trim();

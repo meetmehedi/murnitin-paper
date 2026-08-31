@@ -86,13 +86,14 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             # Must run on raw text BEFORE clean_pdf_text(), because the cleaner
             # can merge the heading line into surrounding text, breaking the regex.
             # References section only inflates the human sentence count and dilutes AI%.
+            # Handles both: (a) "\nReferences\n" (pypdf) and (b) ". References [1]" (pdf.js space-joined)
             _ref_pat = re.compile(
-                r'(?:^|\n)[ \t]*(References|Bibliography|Works Cited|Literature Cited|REFERENCES|BIBLIOGRAPHY)[ \t]*(?:\n|:|\[|\Z)',
+                r'(?:^|\n|\.|\s{2,})[ \t]*(References|Bibliography|Works Cited|Literature Cited|REFERENCES|BIBLIOGRAPHY)[ \t]*(?:\n|:|\[|\s{2,}|\Z)',
                 re.MULTILINE
             )
             _ref_m = _ref_pat.search(raw_text)
             if _ref_m and _ref_m.start() > 500:
-                raw_text = raw_text[:_ref_m.start()]
+                raw_text = raw_text[:_ref_m.start() + 1]  # keep the sentence-ending char if any
 
             # Clean text & merge broken PDF column hyphens (e.g., 'infor- mation' -> 'information')
             clean_text = raw_text
