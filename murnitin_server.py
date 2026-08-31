@@ -118,9 +118,11 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             # Ensemble classification if models loaded successfully
             if PIPE_AHMED and PIPE_OPENAI:
                 try:
-                    # Run predictions
-                    preds_ahmed = PIPE_AHMED(sentences)
-                    preds_openai = PIPE_OPENAI(sentences)
+                    import torch
+                    with torch.no_grad():
+                        # Run predictions in batched mode with no gradient tracking for maximum speed
+                        preds_ahmed = PIPE_AHMED(sentences, batch_size=16, truncation=True, max_length=512)
+                        preds_openai = PIPE_OPENAI(sentences, batch_size=16, truncation=True, max_length=512)
                     
                     for i, (s, p_ahmed, p_openai) in enumerate(zip(sentences, preds_ahmed, preds_openai)):
                         # Ahmed: labels 'AI' or 'Human'

@@ -709,6 +709,9 @@ function applyReceiptAndModal(result, text, origin) {
   const hdrId = document.getElementById('hdr-doc-id');
   if (hdrId) hdrId.textContent = activeSubmissionId;
 
+  const hdrWords = document.getElementById('hdr-doc-words');
+  if (hdrWords) hdrWords.textContent = wordCountVal.toLocaleString();
+
   const studioTitle = document.getElementById('studio-doc-title');
   if (studioTitle) studioTitle.textContent = activeSubmissionTitle;
 
@@ -817,7 +820,7 @@ if (btnInspect) {
     for (const endpoint of apiEndpoints) {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 12000);
+        const timeout = setTimeout(() => controller.abort(), 60000);
 
         const response = await fetch(endpoint, {
           method: 'POST',
