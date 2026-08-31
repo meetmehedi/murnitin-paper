@@ -61,7 +61,15 @@ const AI_TRIGRAMS = [
   "predictable behaviors", "systematic design", "renders urban", "implement comprehensive",
   "manage resources", "multifaceted urban", "diverse communities", "online learning",
   "educational resources", "modern era", "software systems", "ease of maintenance",
-  "scalable software", "computer programs", "logical instructions"
+  "scalable software", "computer programs", "logical instructions",
+  "synthesizing", "telemetry", "cybernetic", "uncertainty refers to",
+  "addresses that gap by", "gap persists between", "belief action outcome",
+  "operational sustainability", "sustainable development in", "sustainable university",
+  "information processing theory", "reduces information", "absence of information",
+  "stability through", "decision making processes", "environmental sustainability goals",
+  "digital capabilities", "ecological governance", "sustainable development",
+  "institutional research", "aligning university goals", "frequently fails because",
+  "structural drivers of", "acquiring digital technologies"
 ];
 
 // LLM High-Frequency Formal Vocabulary
@@ -287,8 +295,8 @@ function evaluateSentence(sent) {
   const perp = Math.max(6.0, Math.round((100 - sentScore) * 0.88 + 8));
 
   let cls = 'human';
-  if (sentScore >= 55) cls = 'ai_direct';
-  else if (sentScore >= 32) cls = 'ai_polished';
+  if (sentScore >= 50) cls = 'ai_direct';
+  else if (sentScore >= 28) cls = 'ai_polished';
 
   return {
     text: sent,

@@ -43,7 +43,15 @@ AI_TRIGRAMS = [
     "predictable behaviors", "systematic design", "renders urban", "implement comprehensive",
     "manage resources", "multifaceted urban", "diverse communities", "online learning",
     "educational resources", "modern era", "software systems", "ease of maintenance",
-    "scalable software", "computer programs", "logical instructions"
+    "scalable software", "computer programs", "logical instructions",
+    "synthesizing", "telemetry", "cybernetic", "uncertainty refers to",
+    "addresses that gap by", "gap persists between", "belief action outcome",
+    "operational sustainability", "sustainable development in", "sustainable university",
+    "information processing theory", "reduces information", "absence of information",
+    "stability through", "decision making processes", "environmental sustainability goals",
+    "digital capabilities", "ecological governance", "sustainable development",
+    "institutional research", "aligning university goals", "frequently fails because",
+    "structural drivers of", "acquiring digital technologies"
 ]
 
 AI_BOILERPLATE = {
@@ -252,9 +260,9 @@ def evaluate_sentence(sent):
     perp = max(6.0, round((100 - sent_score) * 0.88 + 8, 1))
 
     cls = 'human'
-    if sent_score >= 55:
+    if sent_score >= 50:
         cls = 'ai_direct'
-    elif sent_score >= 32:
+    elif sent_score >= 28:
         cls = 'ai_polished'
 
     return {
@@ -303,23 +311,13 @@ def analyze_document(text, source_label="Input"):
     variance = sum((p - avg) ** 2 for p in perps) / len(perps)
     burstiness = math.sqrt(variance)
 
-    ai_direct = [r for r in sent_results if r['classification'] == 'ai_direct']
-    ai_polish = [r for r in sent_results if r['classification'] == 'ai_polished']
-    ai_total  = ai_direct + ai_polish
-    flagged_ratio = len(ai_total) / len(sent_results)
+    # Turnitin-Standard Word-Weighted AI Likelihood calculation
+    total_words = sum(len(s.split()) for s in raw_sents)
+    ai_direct_words = sum(len(r['text'].split()) for r in sent_results if r['classification'] == 'ai_direct')
+    ai_polished_words = sum(len(r['text'].split()) for r in sent_results if r['classification'] == 'ai_polished')
 
-    avg_sent_score = sum(r['score'] for r in sent_results) / len(sent_results)
-
-    if flagged_ratio >= 0.70:
-        overall_score = 65 + (flagged_ratio * 25) + (avg_sent_score * 0.10)
-        if cv_len < 0.25:
-            overall_score += 8
-    elif flagged_ratio >= 0.35:
-        overall_score = 35 + (flagged_ratio * 35) + (avg_sent_score * 0.15)
-    else:
-        overall_score = (avg_sent_score * 0.60) + (flagged_ratio * 30)
-        if cv_len > 0.40:
-            overall_score -= 10
+    weighted_ai_words = (ai_direct_words * 1.0) + (ai_polished_words * 0.90)
+    overall_score = round((weighted_ai_words / total_words * 100.0)) if total_words > 0 else 0
 
     if has_evasion:
         overall_score = max(overall_score, 88)
