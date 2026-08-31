@@ -82,8 +82,9 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             homo = detect_homoglyphs(raw_text)
             has_evasion = len(hidden) > 0 or len(homo) > 0
 
-            # Clean text
+            # Clean text & merge broken PDF column hyphens (e.g., 'infor- mation' -> 'information')
             clean_text = raw_text
+            clean_text = re.sub(r'(\w+)-\s+(\w+)', r'\1\2', clean_text)
             for ch in INVISIBLE:
                 clean_text = clean_text.replace(ch, '')
             clean_text = clean_pdf_text(clean_text)
@@ -241,12 +242,12 @@ if __name__ == '__main__':
     os.chdir(script_dir)
 
     handler = MurnitinHandler
-    socketserver.TCPServer.allow_reuse_address = True
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
 
     httpd = None
     for candidate_port in range(PORT, PORT + 10):
         try:
-            httpd = socketserver.TCPServer(("", candidate_port), handler)
+            httpd = socketserver.ThreadingTCPServer(("", candidate_port), handler)
             break
         except OSError as e:
             if getattr(e, 'errno', None) not in {48, 98, 10048}:

@@ -173,7 +173,8 @@ function detectHomoglyphs(text) {
 }
 
 function cleanPDFText(text) {
-  let cleaned = text.replace(/-\s*\n\s*/g, '');
+  let cleaned = text.replace(/(\w+)-\s+(\w+)/g, '$1$2');
+  cleaned = cleaned.replace(/-\s*\n\s*/g, '');
   cleaned = cleaned.replace(/(?<![.!?])\n(?!\n)/g, ' ');
   cleaned = cleaned.replace(/\n{2,}/g, '\n').replace(/ {2,}/g, ' ');
   cleaned = cleaned.replace(/\[\d+\]/g, '');

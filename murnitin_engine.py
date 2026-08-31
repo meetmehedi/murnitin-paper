@@ -131,6 +131,7 @@ TOP_500_COMMON = {
 # TEXT CLEANING  (handles PDF extraction artifacts)
 # ─────────────────────────────────────────────────────────────────────────────
 def clean_pdf_text(text):
+    text = re.sub(r'(\w+)-\s+(\w+)', r'\1\2', text)
     text = re.sub(r'-\s*\n\s*', '', text)
     text = re.sub(r'(?<![.!?])\n(?!\n)', ' ', text)
     text = re.sub(r'\n{2,}', '\n', text)
