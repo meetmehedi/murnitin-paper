@@ -30,13 +30,20 @@ try:
     print("Loading Hugging Face AI Detector Ensemble Models...")
     from transformers import pipeline
     
-    # 1. ahmediqbal/ai-text-detector-model (primary — fine-tuned for academic AI detection)
-    PIPE_AHMED = pipeline("text-classification", model="ahmediqbal/ai-text-detector-model")
-    print("✓ Model 1/2 (ahmediqbal) loaded!")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_ahmed = os.path.join(script_dir, "models", "ahmediqbal")
+    local_openai = os.path.join(script_dir, "models", "roberta-openai")
     
-    # 2. roberta-base-openai-detector (secondary — GPT-2 era baseline calibration)
-    PIPE_OPENAI = pipeline("text-classification", model="roberta-base-openai-detector")
-    print("✓ Model 2/2 (openai-detector) loaded!")
+    model_ahmed = local_ahmed if os.path.isdir(local_ahmed) else "ahmediqbal/ai-text-detector-model"
+    model_openai = local_openai if os.path.isdir(local_openai) else "roberta-base-openai-detector"
+    
+    # 1. ahmediqbal/ai-text-detector-model (primary — academic AI detection)
+    PIPE_AHMED = pipeline("text-classification", model=model_ahmed)
+    print(f"✓ Model 1/2 (ahmediqbal) loaded from {'LOCAL DISK' if model_ahmed == local_ahmed else 'HuggingFace'}!")
+    
+    # 2. roberta-base-openai-detector (secondary — baseline calibration)
+    PIPE_OPENAI = pipeline("text-classification", model=model_openai)
+    print(f"✓ Model 2/2 (openai-detector) loaded from {'LOCAL DISK' if model_openai == local_openai else 'HuggingFace'}!")
     
     print("✓ Ensemble Engine fully initialized!")
 except Exception as e:

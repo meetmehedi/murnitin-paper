@@ -10,3 +10,7 @@ dist/
 build/
 .streamlit/secrets.toml
 .vscode/
+models/
+*.safetensors
+*.bin
+scratch_*.txt
