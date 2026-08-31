@@ -196,11 +196,11 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             
             score = round(max(0.0, min(100.0, calibrated_score)))
 
-            # Verdict mapping matching Turnitin
-            if score < 20:       verdict = 'Likely Human'
-            elif score < 45:     verdict = 'Mostly Human'
-            elif score < 70:     verdict = 'Inconclusive / Mixed'
-            elif score < 85:     verdict = 'Likely AI-Assisted'
+            # Verdict mapping matching Turnitin standards
+            if score < 15:       verdict = 'Likely Human'
+            elif score < 35:     verdict = 'Minor AI Polish / Mixed'
+            elif score < 60:     verdict = 'Substantial AI-Assisted'
+            elif score < 80:     verdict = 'High AI Content'
             else:                verdict = 'Likely AI-Generated'
             if has_evasion:      verdict = 'Evasion Detected'
 
@@ -217,7 +217,7 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                 'hiddenChars': hidden,
                 'homoglyphs': [h['word'] for h in homo],
                 'verdict': verdict,
-                'verdictClass': 'green' if score < 25 else 'yellow' if score < 80 else 'red'
+                'verdictClass': 'green' if score < 20 else 'yellow' if score < 40 else 'red'
             }
 
             self.send_response(200)

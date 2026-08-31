@@ -378,12 +378,12 @@ function analyzeText(rawText) {
   overallScore = Math.round(Math.max(0, Math.min(100, overallScore)));
 
   let verdict = '', verdictClass = '';
-  if (hasEvasion)             { verdict = 'Evasion Detected';      verdictClass = 'red'; }
-  else if (overallScore < 20) { verdict = 'Likely Human';           verdictClass = 'green'; }
-  else if (overallScore < 45) { verdict = 'Mostly Human';           verdictClass = 'green'; }
-  else if (overallScore < 65) { verdict = 'Inconclusive / Mixed';   verdictClass = 'amber'; }
-  else if (overallScore < 82) { verdict = 'Likely AI-Assisted';     verdictClass = 'amber'; }
-  else                        { verdict = 'Likely AI-Generated';    verdictClass = 'red'; }
+  if (hasEvasion)             { verdict = 'Evasion Detected';          verdictClass = 'red'; }
+  else if (overallScore < 15) { verdict = 'Likely Human';               verdictClass = 'green'; }
+  else if (overallScore < 35) { verdict = 'Minor AI Polish / Mixed';    verdictClass = 'amber'; }
+  else if (overallScore < 60) { verdict = 'Substantial AI-Assisted';    verdictClass = 'amber'; }
+  else if (overallScore < 80) { verdict = 'High AI Content';            verdictClass = 'red'; }
+  else                        { verdict = 'Likely AI-Generated';        verdictClass = 'red'; }
 
   return {
     score: overallScore,
@@ -1081,8 +1081,9 @@ function renderSidebarDrawer(r) {
   const vDescEl = document.getElementById('verdict-desc');
   if (vDescEl) {
     if (r.score >= 80) vDescEl.textContent = 'High probability of machine-generated prose.';
-    else if (r.score >= 55) vDescEl.textContent = 'Substantial AI-assistance or paraphrasing detected.';
-    else if (r.score >= 25) vDescEl.textContent = 'Mixed indicators — collaborative editing or mild AI polish.';
+    else if (r.score >= 60) vDescEl.textContent = 'Substantial portions of document generated with AI assistance.';
+    else if (r.score >= 35) vDescEl.textContent = 'Notable AI assistance, paraphrasing, or machine-edited prose detected.';
+    else if (r.score >= 15) vDescEl.textContent = 'Minor indicators — collaborative editing or mild AI polish.';
     else vDescEl.textContent = 'Linguistic variation aligns with organic human writing.';
   }
 
