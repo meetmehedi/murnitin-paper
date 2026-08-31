@@ -173,6 +173,19 @@ function cleanPDFText(text) {
   cleaned = cleaned.replace(/Fig\.\s*\d+/gi, '');
   cleaned = cleaned.replace(/Table\s+\d+/gi, '');
 
+  // Strip Turnitin / platform watermark lines embedded in PDFs
+  const WATERMARK_PATTERNS = [
+    /Page \d+ of \d+\s*-\s*AI Writing[^\n]*/gi,
+    /Submission ID\s*trn:[^\n]+/gi,
+    /AI-generated only\s+\d+%/gi,
+    /Likely AI-generated text from a lar[^\n]+/gi,
+    /AI Writing Submission/gi,
+    /AI-generated text that was AI-paraphrased/gi
+  ];
+  for (const pat of WATERMARK_PATTERNS) {
+    cleaned = cleaned.replace(pat, ' ');
+  }
+
   // Exclude bibliography/reference sections from prose AI calculation
   const refIndex = cleaned.search(/\n\s*(references|bibliography|works cited|literature cited)\s*\n/i);
   if (refIndex !== -1 && refIndex > 200) {
@@ -259,10 +272,13 @@ function evaluateSentence(sent) {
   else if (nomRatio >= 0.10) sentScore += 10;
 
   // Openers & Length
+  sentScore += openerScore;
+  sentScore += lengthScore;
+  sentScore -= (humanHits * 35);
+
   // ESL Fairness Mode adjustments
   if (typeof isESLModeActive !== 'undefined' && isESLModeActive) {
-    openerScore = Math.max(0, openerScore - 15);
-    sentScore = Math.max(0, sentScore - 14);
+    sentScore = Math.max(0, sentScore - 18);
   }
 
   sentScore = Math.max(0, Math.min(100, sentScore));
@@ -341,26 +357,15 @@ function analyzeText(rawText) {
   const stdPerp = Math.sqrt(perps.reduce((s, p) => s + Math.pow(p - avgPerp, 2), 0) / perps.length);
   const burstiness = (avgPerp + stdPerp > 0) ? (stdPerp - avgPerp) / (stdPerp + avgPerp) : 0;
 
-  // Document AI score aggregation
-  const avgSentScore = sentences.reduce((s, x) => s + x.score, 0) / sentences.length;
-  const flaggedRatio = aiFlaggedCount / sentences.length;
+  // Turnitin-Standard Word-Weighted AI Likelihood calculation
+  const totalWords = sentences.reduce((sum, s) => sum + s.text.split(/\s+/).filter(w => w.length > 0).length, 0);
+  const aiDirectWords = sentences.filter(s => s.classification === 'ai_direct').reduce((sum, s) => sum + s.text.split(/\s+/).filter(w => w.length > 0).length, 0);
+  const aiPolishedWords = sentences.filter(s => s.classification === 'ai_polished').reduce((sum, s) => sum + s.text.split(/\s+/).filter(w => w.length > 0).length, 0);
 
-  let overallScore = 0;
-  if (flaggedRatio >= 0.70) {
-    // High confidence AI document
-    overallScore = 65 + (flaggedRatio * 25) + (avgSentScore * 0.10);
-    if (cvLen < 0.25) overallScore += 8;
-  } else if (flaggedRatio >= 0.35) {
-    // Mixed / Hybrid or edited
-    overallScore = 35 + (flaggedRatio * 35) + (avgSentScore * 0.15);
-  } else {
-    // Mostly human document
-    overallScore = (avgSentScore * 0.60) + (flaggedRatio * 30);
-    if (cvLen > 0.40) overallScore -= 10;
-  }
+  const weightedAiWords = (aiDirectWords * 1.0) + (aiPolishedWords * 0.90);
+  let overallScore = totalWords > 0 ? Math.round((weightedAiWords / totalWords) * 100) : 0;
 
   if (hasEvasion) overallScore = Math.max(overallScore, 88);
-
   overallScore = Math.round(Math.max(0, Math.min(100, overallScore)));
 
   let verdict = '', verdictClass = '';
@@ -792,29 +797,26 @@ if (btnInspect) {
     const origText = btnLabel.textContent;
     btnLabel.textContent = '🔬 Running Murnitin Inspection…';
 
-    const isStaticHost = typeof window !== 'undefined' && (
-      window.location.hostname.includes('github.io') ||
-      window.location.hostname.includes('vercel.app') ||
-      window.location.protocol === 'file:'
-    );
+    // Determine API Endpoint: try relative if on same origin, or Render backend if on static host
+    const apiEndpoints = [
+      '/api/analyze',
+      'https://murnitin.onrender.com/api/analyze'
+    ];
 
-    if (isStaticHost) {
-      // ── Instant Client-Side Statistical Engine on Static Hosts (GitHub Pages) ──
-      setEngineIndicator('heuristic');
-      const result = analyzeText(text);
-      if (result) {
-        applyReceiptAndModal(result, text, origin);
-      }
-    } else {
+    let backendSuccess = false;
+
+    for (const endpoint of apiEndpoints) {
       try {
-        // ── Try Local/Cloud ML server if available ──
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 6000);
+        const timeout = setTimeout(() => controller.abort(), 12000);
 
-        const response = await fetch('/api/analyze', {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ 
+            text,
+            eslMode: typeof isESLModeActive !== 'undefined' ? isESLModeActive : false 
+          }),
           signal: controller.signal,
         });
         clearTimeout(timeout);
@@ -829,15 +831,19 @@ if (btnInspect) {
 
         setEngineIndicator('ml');
         applyReceiptAndModal(result, text, origin);
-
+        backendSuccess = true;
+        break;
       } catch (err) {
-        console.warn('Backend unavailable, using client-side statistical engine:', err.message);
-        setEngineIndicator('heuristic');
+        // Try next endpoint or fallback
+      }
+    }
 
-        const result = analyzeText(text);
-        if (result) {
-          applyReceiptAndModal(result, text, origin);
-        }
+    if (!backendSuccess) {
+      console.warn('RoBERTa ML backend unavailable, using client-side statistical engine.');
+      setEngineIndicator('heuristic');
+      const result = analyzeText(text);
+      if (result) {
+        applyReceiptAndModal(result, text, origin);
       }
     }
 

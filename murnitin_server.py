@@ -49,7 +49,7 @@ except Exception as e:
 # ─────────────────────────────────────────────────────────────────────────────
 class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
-        global PIPE_AHMED, PIPE_FAKESPOT, PIPE_OPENAI
+        global PIPE_AHMED, PIPE_OPENAI
         if self.path == '/api/analyze':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -57,6 +57,7 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 data = json.loads(post_data.decode('utf-8'))
                 raw_text = data.get('text', '')
+                esl_mode = data.get('eslMode', False)
             except Exception as e:
                 self.send_response(400)
                 self.end_headers()
@@ -122,11 +123,17 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         # DUAL-GATE: Both models must agree above calibrated thresholds.
                         # Thresholds validated against Turnitin ground truth on academic papers.
                         # Ahmed>0.95 + OpenAI>0.35 -> ~45-49% on AI-heavy papers like mis_v5
+                        # In ESL mode, raise the AI gate to prevent false flags on non-native formal transitions
+                        direct_thresh_ahmed = 0.98 if esl_mode else 0.95
+                        direct_thresh_openai = 0.40 if esl_mode else 0.35
+                        polished_thresh_ahmed = 0.88 if esl_mode else 0.82
+                        polished_thresh_openai = 0.30 if esl_mode else 0.25
+
                         cls = 'human'
-                        if score_ahmed > 0.95 and score_openai > 0.35:
+                        if score_ahmed > direct_thresh_ahmed and score_openai > direct_thresh_openai:
                             cls = 'ai_direct'
                             ai_direct_count += 1
-                        elif score_ahmed > 0.82 and score_openai > 0.25:
+                        elif score_ahmed > polished_thresh_ahmed and score_openai > polished_thresh_openai:
                             cls = 'ai_polished'
                             ai_polished_count += 1
                             
@@ -205,7 +212,6 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
 
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps(response_data).encode('utf-8'))
         else:
