@@ -2168,3 +2168,126 @@ body {
 .btn-xai-jump:hover {
   background: #1e3a8a;
 }
+
+/* ═══════════════════════════════════════════════
+   MURNITIN VS TURNITIN COMPARISON TAB
+   ═══════════════════════════════════════════════ */
+.compare-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.compare-header {
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.75rem;
+}
+
+.compare-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--t-blue);
+  background: var(--t-blue-light);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.compare-header h5 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.compare-metric-table {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-size: 0.75rem;
+}
+
+.cmt-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  padding: 0.45rem 0.6rem;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.cmt-row:last-child {
+  border-bottom: none;
+}
+
+.cmt-row.cmt-header {
+  background: #ffffff;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.cmt-bad {
+  color: var(--t-red);
+  font-weight: 600;
+}
+
+.cmt-good {
+  color: var(--t-green);
+  font-weight: 700;
+}
+
+/* Signal Meters Box */
+.signal-meters-box {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.signal-meters-box h6 {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+}
+
+.signal-meter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.smi-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.smi-top strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.smi-bar {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.smi-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--t-blue), var(--t-navy-accent));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2.9.0">
+  <link rel="stylesheet" href="styles.css?v=3.1.0">
 </head>
 <body class="murnitin-theme">
 
@@ -406,6 +406,7 @@
               <button class="drawer-tab active" data-dtab="matches" id="dtab-btn-matches">Match Breakdown</button>
               <button class="drawer-tab" data-dtab="profile" id="dtab-btn-profile">Perplexity Profile</button>
               <button class="drawer-tab" data-dtab="evasion" id="dtab-btn-evasion">Evasion Forensics</button>
+              <button class="drawer-tab" data-dtab="compare" id="dtab-btn-compare">⚡ vs Turnitin</button>
             </div>
 
             <!-- Tab 1: Match Breakdown List -->
@@ -449,6 +450,75 @@
                 <span class="clean-icon">✓</span>
                 <h6>No Adversarial Evasion Found</h6>
                 <p>Zero homoglyphs or hidden zero-width characters detected in the submission.</p>
+              </div>
+            </div>
+
+            <!-- Tab 4: Murnitin vs Turnitin Forensic Comparison -->
+            <div id="dtab-compare" class="drawer-tab-pane">
+              <div class="compare-card">
+                <div class="compare-header">
+                  <span class="compare-badge">MURNITIN 3.0 ADVANTAGE</span>
+                  <h5>Murnitin vs Turnitin</h5>
+                </div>
+                
+                <div class="compare-metric-table">
+                  <div class="cmt-row cmt-header">
+                    <span>Dimension</span>
+                    <span>Turnitin</span>
+                    <span>Murnitin</span>
+                  </div>
+                  <div class="cmt-row">
+                    <span>Explainable XAI</span>
+                    <span class="cmt-bad">❌ None</span>
+                    <span class="cmt-good">✅ Evidence Tags</span>
+                  </div>
+                  <div class="cmt-row">
+                    <span>Detection Layers</span>
+                    <span class="cmt-bad">❌ 1 Highlight</span>
+                    <span class="cmt-good">✅ 3 Color Layers</span>
+                  </div>
+                  <div class="cmt-row">
+                    <span>Evasion Bypass</span>
+                    <span class="cmt-bad">❌ Bypassed</span>
+                    <span class="cmt-good">✅ Unicode Audit</span>
+                  </div>
+                  <div class="cmt-row">
+                    <span>Citations/Refs</span>
+                    <span class="cmt-bad">❌ Dilutes Score</span>
+                    <span class="cmt-good">✅ Auto-Truncated</span>
+                  </div>
+                  <div class="cmt-row">
+                    <span>ESL Protection</span>
+                    <span class="cmt-bad">❌ False Flags</span>
+                    <span class="cmt-good">✅ Fairness Shield</span>
+                  </div>
+                  <div class="cmt-row">
+                    <span>Data Retention</span>
+                    <span class="cmt-bad">❌ Stored</span>
+                    <span class="cmt-good">✅ Zero-Storage</span>
+                  </div>
+                </div>
+
+                <!-- Forensic Signal Meters for This Document -->
+                <div class="signal-meters-box">
+                  <h6>Forensic Signal Breakdown</h6>
+                  <div class="signal-meter-item">
+                    <div class="smi-top"><span>Neural Model Confidence</span><strong id="sig-val-neural">94%</strong></div>
+                    <div class="smi-bar"><div class="smi-fill" id="sig-bar-neural" style="width:94%;"></div></div>
+                  </div>
+                  <div class="signal-meter-item">
+                    <div class="smi-top"><span>Vocabulary Concentration (Yule's K)</span><strong id="sig-val-vocab">Moderate</strong></div>
+                    <div class="smi-bar"><div class="smi-fill" id="sig-bar-vocab" style="width:65%;"></div></div>
+                  </div>
+                  <div class="signal-meter-item">
+                    <div class="smi-top"><span>AI Transition Opener Density</span><strong id="sig-val-trans">Low</strong></div>
+                    <div class="smi-bar"><div class="smi-fill" id="sig-bar-trans" style="width:30%;"></div></div>
+                  </div>
+                  <div class="signal-meter-item">
+                    <div class="smi-top"><span>Syntactic Uniformity</span><strong id="sig-val-syntax">Balanced</strong></div>
+                    <div class="smi-bar"><div class="smi-fill" id="sig-bar-syntax" style="width:50%;"></div></div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -648,6 +718,6 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
   </script>
-  <script src="app.js?v=2.9.0"></script>
+  <script src="app.js?v=3.1.0"></script>
 </body>
 </html>

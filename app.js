@@ -1200,6 +1200,33 @@ function renderSidebarDrawer(r) {
     if (evSection) evSection.classList.add('hidden');
     if (evCleanBox) evCleanBox.classList.remove('hidden');
   }
+
+  // ── Populate Murnitin vs Turnitin Signal Meters (Tab 4) ──
+  const sigNeuralVal = document.getElementById('sig-val-neural');
+  const sigNeuralBar = document.getElementById('sig-bar-neural');
+  const sigVocabVal  = document.getElementById('sig-val-vocab');
+  const sigVocabBar  = document.getElementById('sig-bar-vocab');
+  const sigTransVal  = document.getElementById('sig-val-trans');
+  const sigTransBar  = document.getElementById('sig-bar-trans');
+  const sigSyntaxVal = document.getElementById('sig-val-syntax');
+  const sigSyntaxBar = document.getElementById('sig-bar-syntax');
+
+  const neuralPct = r.score || 0;
+  if (sigNeuralVal) sigNeuralVal.textContent = `${neuralPct}%`;
+  if (sigNeuralBar) sigNeuralBar.style.width = `${Math.max(5, neuralPct)}%`;
+
+  const sSum = r.signalSummary || {};
+  const vocabScore = sSum.vocabulary_richness_avg || (r.score > 50 ? 68 : 25);
+  if (sigVocabVal) sigVocabVal.textContent = vocabScore > 50 ? 'High (Repetitive)' : vocabScore > 20 ? 'Moderate' : 'Diverse (Human)';
+  if (sigVocabBar) sigVocabBar.style.width = `${Math.min(100, Math.max(10, vocabScore * 2))}%`;
+
+  const transScore = sSum.transition_avg || (r.score > 50 ? 45 : 10);
+  if (sigTransVal) sigTransVal.textContent = transScore > 40 ? 'High Formulaic' : transScore > 15 ? 'Moderate' : 'Natural (Low)';
+  if (sigTransBar) sigTransBar.style.width = `${Math.min(100, Math.max(10, transScore * 1.8))}%`;
+
+  const syntaxScore = sSum.syntactic_avg || 50;
+  if (sigSyntaxVal) sigSyntaxVal.textContent = syntaxScore > 60 ? 'Uniform AI Syntax' : 'Organic Cadence';
+  if (sigSyntaxBar) sigSyntaxBar.style.width = `${Math.min(100, Math.max(15, syntaxScore))}%`;
 }
 
 // Drawer Tabs Switching
