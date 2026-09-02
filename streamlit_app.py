@@ -16,7 +16,7 @@ from datetime import datetime
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Murnitin — AI & Plagiarism Inspector",
-    page_icon="🔬",
+    page_icon="murnitin.png",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
