@@ -14,3 +14,14 @@ models/
 *.safetensors
 *.bin
 scratch_*.txt
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+murnitin1/
+Murnitin_Integrity_Report_*.pdf
+mis_v5*.pdf
