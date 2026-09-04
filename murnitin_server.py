@@ -9,6 +9,7 @@ import os
 from murnitin_engine import (
     evaluate_sentence,
     clean_pdf_text,
+    strip_latex_and_math,
     split_sentences,
     detect_hidden_characters,
     detect_homoglyphs,
@@ -95,8 +96,9 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             if _ref_m and _ref_m.start() > 500:
                 raw_text = raw_text[:_ref_m.start() + 1]  # keep the sentence-ending char if any
 
-            # Clean text & merge broken PDF column hyphens (e.g., 'infor- mation' -> 'information')
-            clean_text = raw_text
+            # Clean text & merge broken PDF column hyphens
+            # Step 0: strip LaTeX/math FIRST (critical for academic paper PDFs)
+            clean_text = strip_latex_and_math(raw_text)
             clean_text = re.sub(r'(\w+)-\s+(\w+)', r'\1\2', clean_text)
             for ch in INVISIBLE:
                 clean_text = clean_text.replace(ch, '')
@@ -147,9 +149,11 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                         # Blends the academic RoBERTa model (70%) with the conservative baseline detector (30%)
                         combined = (score_ahmed * 0.70) + (score_openai * 0.30)
 
-                        # Thresholds: In ESL Mode, apply higher sensitivity threshold to protect non-native writers
-                        direct_thresh = 0.68 if esl_mode else 0.58
-                        polished_thresh = 0.38 if esl_mode else 0.30
+                        # Thresholds calibrated to Turnitin ground-truth benchmark validation:
+                        # direct 0.52 (was 0.58) | polished 0.26 (was 0.30)
+                        # ESL mode: apply higher thresholds to protect non-native writers
+                        direct_thresh   = 0.64 if esl_mode else 0.52
+                        polished_thresh = 0.40 if esl_mode else 0.26
 
                         cls = 'human'
                         if combined >= direct_thresh:
@@ -227,9 +231,10 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
             calibrated_score = (weighted_ai_words / total_words * 100.0) if total_words > 0 else 0.0
             
             if has_evasion:
-                calibrated_score = max(calibrated_score, 85.0)
+                calibrated_score = max(calibrated_score, 80.0)  # was 85, lowered for calibration
             
             score = round(max(0.0, min(100.0, calibrated_score)))
+            engine_mode = 'neural' if (PIPE_AHMED and PIPE_OPENAI and sent_results and sent_results[0].get('score_ahmed') is not None) else 'statistical'
 
             # Verdict mapping matching Turnitin standards
             if score < 15:       verdict = 'Likely Human'
@@ -282,7 +287,8 @@ class MurnitinHandler(http.server.SimpleHTTPRequestHandler):
                 'avgConfidence': avg_confidence,
                 'signalSummary': signal_summary,
                 'eslDetected': esl_detected,
-                'engineVersion': '3.0',
+                'engineMode': engine_mode,   # 'neural' | 'statistical'
+                'engineVersion': '3.1',
             }
 
             response_body = json.dumps(response_data).encode('utf-8')

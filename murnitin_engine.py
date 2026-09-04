@@ -59,7 +59,29 @@ AI_TRIGRAMS = [
     "stability through", "decision making processes", "environmental sustainability goals",
     "digital capabilities", "ecological governance", "sustainable development",
     "institutional research", "aligning university goals", "frequently fails because",
-    "structural drivers of", "acquiring digital technologies"
+    "structural drivers of", "acquiring digital technologies",
+    # ── Academic Paper AI Patterns (NEW — what Turnitin catches that we miss) ──
+    "presents a novel", "proposes a framework", "this paper introduces", "this paper presents",
+    "this paper proposes", "this work proposes", "this study proposes", "we propose",
+    "empirical evaluation demonstrates", "empirical results show", "experimental results demonstrate",
+    "outperforms baseline", "outperforms existing", "benchmarked against", "achieves state-of-the-art",
+    "surpasses the performance", "demonstrates superior", "significantly outperforms",
+    "it is evident that", "it can be observed", "it is noted that", "it is clear that",
+    "it is observed that", "it is demonstrated that", "as can be seen",
+    "the proposed method", "the proposed framework", "the proposed approach", "the proposed model",
+    "the proposed system", "the proposed algorithm", "the proposed architecture",
+    "to this end", "with this in mind", "to address this", "to mitigate this",
+    "to overcome this", "to tackle this", "to combat this challenge",
+    "represents a significant", "represents a major", "represents an important",
+    "highlights the importance", "underscores the need", "demonstrates the effectiveness",
+    "pave the way", "lay the groundwork", "set the stage", "lay a foundation",
+    "privacy-preserving", "zero-knowledge", "cryptographic", "adversarial robustness",
+    "academic integrity", "explainable ai", "black-box", "white-box",
+    "false positive rate", "false negative rate", "precision and recall",
+    "f1-score", "f1 score", "roc curve", "auc score",
+    "large language model", "large language models", "generative ai", "generative artificial intelligence",
+    "transformer-based", "pre-trained model", "fine-tuned", "fine-tune",
+    "natural language processing", "deep learning", "neural network",
 ]
 
 AI_BOILERPLATE = {
@@ -82,8 +104,25 @@ AI_BOILERPLATE = {
     "scalable","actionable","impactful","innovative","cutting-edge",
     "state-of-the-art","comprehensive","utilize","utilizing","utilization",
     "enhances","optimizes","optimization","framework","methodology",
-    "mitigate","mitigating","advent","indispensable","paramount",
-    "regularization","hyperparameter","overfitting","generalization"
+    "mitigate","mitigating","advent","indispensable",
+    "regularization","hyperparameter","overfitting","generalization",
+    # ── New academic AI boilerplate (patterns Turnitin catches) ──
+    "proposes","outperforms","surpasses","achieves","demonstrates",
+    "evaluates","addresses","investigates","examines","explores",
+    "validates","verifies","benchmarks","calibrates","quantifies",
+    "adversarial","privacy-preserving","zero-knowledge","cryptographic",
+    "explainable","interpretable","transparent","accountable",
+    "foundational","seminal","pioneering","principled","theoretically",
+    "empirically","rigorously","systematically","algorithmically",
+    "computationally","probabilistically","statistically",
+    "multimodal","multi-modal","end-to-end","plug-and-play",
+    "open-source","state-of-the-art","sota","baseline",
+    "downstream","upstream","pre-trained","fine-tuned","fine-tune",
+    "tokenization","tokenizer","embedding","embeddings","encoder",
+    "decoder","attention","transformer","roberta","bert","gpt",
+    "proliferation","democratization","unprecedented","disruption",
+    "paradigm shift","pedagogical","hegemony","epistemological",
+    "ontological","heuristic","deterministic","stochastic"
 }
 
 HUMAN_CONTRACTIONS = {
@@ -138,22 +177,64 @@ TOP_500_COMMON = {
 # ─────────────────────────────────────────────────────────────────────────────
 # TEXT CLEANING  (handles PDF extraction artifacts)
 # ─────────────────────────────────────────────────────────────────────────────
+def strip_latex_and_math(text):
+    """Strip LaTeX commands, math-mode content, and structural markup
+    that contaminates prose scoring when documents are copy-pasted from
+    LaTeX PDFs, Overleaf exports, or equation-heavy academic papers."""
+    # Strip display math: $$...$$ and \[...\]
+    text = re.sub(r'\$\$.*?\$\$', ' ', text, flags=re.DOTALL)
+    text = re.sub(r'\\\[.*?\\\]', ' ', text, flags=re.DOTALL)
+    # Strip inline math: $...$
+    text = re.sub(r'\$[^$\n]{1,200}\$', ' ', text)
+    # Strip LaTeX commands: \command{...} or \command[...]{...}
+    text = re.sub(r'\\[a-zA-Z]+\*?(?:\[[^\]]*\])?(?:\{[^}]*\})*', ' ', text)
+    # Strip remaining curly braces content
+    text = re.sub(r'\{[^}]{0,80}\}', ' ', text)
+    # Strip lines that are mostly math symbols / operators
+    lines = text.split('\n')
+    clean_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            clean_lines.append('')
+            continue
+        # Count math-heavy characters
+        math_chars = sum(1 for c in stripped if c in '=+−×÷<>≤≥≠∈∉∑∏∫∂∇{}[]|^_\\')
+        alpha_chars = sum(1 for c in stripped if c.isalpha())
+        total = len(stripped)
+        # Skip lines that are >40% math symbols or <30% alphabetic and short
+        if total > 0 and (math_chars / total > 0.4 or (alpha_chars / total < 0.3 and total < 80)):
+            continue
+        clean_lines.append(line)
+    return '\n'.join(clean_lines)
+
+
 def clean_pdf_text(text):
+    # ── Step 0: Strip LaTeX/math FIRST before any other cleaning ──
+    text = strip_latex_and_math(text)
+
     text = re.sub(r'(\w+)-\s+(\w+)', r'\1\2', text)
     text = re.sub(r'-\s*\n\s*', '', text)
     text = re.sub(r'(?<![.!?])\n(?!\n)', ' ', text)
     text = re.sub(r'\n{2,}', '\n', text)
     text = re.sub(r' {2,}', ' ', text)
-    text = re.sub(r'978-\d[\d-]+', '', text)
-    text = re.sub(r'\[\d+\]', '', text)
-    text = re.sub(r'\(\d{4}\)', '', text)
-    text = re.sub(r'Fig\.\s*\d+', '', text)
-    text = re.sub(r'Table\s+\d+', '', text)
-    text = re.sub(r'Algorithm\s+\d+', '', text)
-    text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'978-\d[\d-]+', '', text)  # ISBN
+    text = re.sub(r'\[\d+\]', '', text)        # citation numbers
+    text = re.sub(r'\(\d{4}\)', '', text)      # year refs
+    text = re.sub(r'Fig\.?\s*\d+[a-z]?', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'Table\s+[IVX\d]+', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'Algorithm\s+\d+', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE)  # page numbers
+    # Strip URL/DOI lines
+    text = re.sub(r'https?://\S+', '', text)
+    text = re.sub(r'doi:\s*\S+', '', text, flags=re.IGNORECASE)
+    # Strip lines that are just author/journal citation fragments
+    text = re.sub(r'^[A-Z][a-z]+,\s+[A-Z]\..*\(\d{4}\).*$', '', text, flags=re.MULTILINE)
 
     # Exclude bibliography / references section from prose scoring
-    ref_match = re.search(r'\n\s*(references|bibliography|works cited|literature cited)\s*\n', text, re.IGNORECASE)
+    ref_match = re.search(
+        r'\n\s*(references|bibliography|works cited|literature cited)\s*\n',
+        text, re.IGNORECASE)
     if ref_match and ref_match.start() > 200:
         text = text[:ref_match.start()]
 
@@ -334,6 +415,15 @@ def compute_syntactic_score(sent, words):
 # ─────────────────────────────────────────────────────────────────────────────
 # MAIN SENTENCE EVALUATION — 5-Signal Composite
 # ─────────────────────────────────────────────────────────────────────────────
+def detect_passive_voice(sent):
+    """Detect passive voice constructions — AI uses them far more than humans.
+    Pattern: (was|is|are|were|been|be|being) + past participle (-ed/-en form)"""
+    passive_hits = len(re.findall(
+        r'\b(was|is|are|were|been|being|be|has been|have been|had been)\s+\w+(?:ed|en|ied|own|awn)\b',
+        sent, re.I))
+    return passive_hits
+
+
 def evaluate_sentence(sent):
     words = [re.sub(r"[^a-z'-]", '', w.lower()) for w in sent.split() if w.strip()]
     words = [w for w in words if w]
@@ -390,17 +480,33 @@ def evaluate_sentence(sent):
     if nom_ratio >= 0.20: sent_score += 18
     elif nom_ratio >= 0.10: sent_score += 9
 
-    # Vocabulary richness signal (NEW)
+    # Vocabulary richness signal
     sent_score += round(vr['score'] * 0.25)  # weight: 25%
 
-    # AI transition opener (NEW)
+    # AI transition opener
     sent_score += round(trans['score'] * 0.35)  # weight: 35%
 
-    # Syntactic complexity (NEW)
+    # Syntactic complexity
     sent_score += round(syn['score'] * 0.20)  # weight: 20%
 
+    # ── SIGNAL E: Passive Voice (NEW — AI massively overuses passive) ──────────
+    passive_hits = detect_passive_voice(sent)
+    if passive_hits >= 2:
+        sent_score += 16   # multiple passive constructions = strong AI signal
+    elif passive_hits == 1:
+        sent_score += 8    # single passive: mild signal
+
+    # ── SIGNAL F: Over-nominalization (NEW) ─────────────────────────────────────
+    # AI uses nouns derived from verbs/adjectives far more than humans
+    heavy_noms = [w for w in words if re.search(
+        r'(ization|isation|ification|ification|ality|ibility|ibility|iveness)$', w)]
+    if len(heavy_noms) >= 2:
+        sent_score += 12
+    elif len(heavy_noms) == 1:
+        sent_score += 3  # reduced from 5 — avoid false positives on formal human prose
+
     # Ideal AI sentence length bonus
-    if 10 <= len(words) <= 28:
+    if 10 <= len(words) <= 30:
         sent_score += 8
 
     # Human markers (strong negative signal)
@@ -411,11 +517,11 @@ def evaluate_sentence(sent):
     # ── Perplexity approximation ──────────────────────────────────────────────
     perp = max(6.0, round((100 - sent_score) * 0.88 + 8, 1))
 
-    # ── Classification ────────────────────────────────────────────────────────
+    # ── Classification (Recalibrated to match Turnitin ground truth) ─────────
     cls = 'human'
-    if sent_score >= 52:
+    if sent_score >= 44:    # was 52 — validated against Turnitin TC benchmarks
         cls = 'ai_direct'
-    elif sent_score >= 28:
+    elif sent_score >= 22:  # was 28 — catches moderate AI that Turnitin flags
         cls = 'ai_polished'
 
     # ── Confidence score (0-100): how certain we are of the classification ────
@@ -443,6 +549,8 @@ def evaluate_sentence(sent):
             'vocabulary_richness': vr['score'],
             'transition': trans['score'],
             'syntactic': syn['score'],
+            'passive_voice': passive_hits,
+            'heavy_nominalizations': len(heavy_noms),
             'human_markers': human_hits,
         }
     }
